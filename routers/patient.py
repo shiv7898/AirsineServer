@@ -12,6 +12,7 @@ import re
 from fastapi.responses import Response
 from xhtml2pdf import pisa
 import io
+from validators import to_numeric_or_string
 
 # Create router
 router = APIRouter(
@@ -90,23 +91,23 @@ def get_profile(request: Request, db: Session = Depends(get_db)):
         "name": db_user.name,
         "email": db_user.email,
         "role": db_user.role,
-        "phone": db_user.phone,
+        "phone": to_numeric_or_string(db_user.phone),
         "gender": db_user.gender,
-        "age": db_user.age,
+        "age": to_numeric_or_string(db_user.age),
         "dob": db_user.dob,
         "home_address": db_user.home_address,
         "area": db_user.area,
         "district": db_user.district,
         "state": db_user.state,
-        "pincode": db_user.pincode,
+        "pincode": to_numeric_or_string(db_user.pincode),
         "hospital": db_user.hospital,
         "specialisation": db_user.specialisation,
         "qualification": db_user.qualification,
-        "experience": db_user.experience,
+        "experience": to_numeric_or_string(db_user.experience),
         "company_name": db_user.company_name,
         "business_type": db_user.business_type,
         "distributor_type": db_user.distributor_type,
-        "license_number": db_user.license_number,
+        "license_number": to_numeric_or_string(db_user.license_number),
         "referral_code": db_user.referral_code,
     }
 
@@ -119,23 +120,23 @@ def update_profile(user: UserCreate, request: Request, db: Session = Depends(get
         if not db_user:
             raise HTTPException(status_code=404, detail="User not found")
         db_user.name = user.name
-        db_user.phone = user.phone
+        db_user.phone = str(user.phone) if user.phone is not None else None
         db_user.gender = user.gender
-        db_user.age = user.age
+        db_user.age = int(user.age) if user.age is not None else None
         db_user.dob = user.dob
         db_user.home_address = user.homeAddress
         db_user.area = user.area
         db_user.district = user.district
         db_user.state = user.state
-        db_user.pincode = user.pincode
+        db_user.pincode = str(user.pincode) if user.pincode is not None else None
         db_user.hospital = user.hospital
         db_user.specialisation = user.specialisation
         db_user.qualification = user.qualification
-        db_user.experience = user.experience
+        db_user.experience = str(user.experience) if user.experience is not None else None
         db_user.company_name = user.companyName
         db_user.business_type = user.businessType
         db_user.distributor_type = user.distributorType
-        db_user.license_number = user.licenseNumber
+        db_user.license_number = str(user.licenseNumber) if user.licenseNumber is not None else None
         db.commit()
         db.refresh(db_user)
         return {"message": "Profile updated successfully!"}
@@ -192,6 +193,7 @@ class PdfSyncPayload(BaseModel):
     patient_details: Optional[Dict[str, Any]] = None
     total_days: Optional[int] = None
     clinical_logs: Optional[List[Dict[str, Any]]] = None
+    pdf_base64: Optional[str] = None
 
 # SYNC PDF DATA (Dummy Endpoint)
 @router.post("/sync-pdf-data")
@@ -206,7 +208,8 @@ async def sync_pdf_data(payload: PdfSyncPayload, request: Request, db: Session =
             app_user_email=payload.app_user_email,
             patient_details=json.dumps(payload.patient_details or {}),
             total_days=payload.total_days,
-            clinical_logs=json.dumps(payload.clinical_logs or [])
+            clinical_logs=json.dumps(payload.clinical_logs or []),
+            pdf_base64=payload.pdf_base64
         )
         db.add(report_data)
         db.commit()
@@ -267,156 +270,24 @@ def download_synced_pdf(days: int = 7, report_id: int = None, request: Request =
     if not report_data:
         raise HTTPException(status_code=404, detail="No synced data found. Please sync from app first.")
         
-    clinical_logs = json.loads(report_data.clinical_logs) if report_data.clinical_logs else []
-    
-    # Filter logs by days
-    filtered_logs = clinical_logs[:days]
-    
-    patient_details = json.loads(report_data.patient_details) if report_data.patient_details else {}
-    
-    table_rows = ""
-    for idx, log in enumerate(filtered_logs):
-        row_bg = "#FFFFFF" if idx % 2 == 0 else "#F3F8FF"
-        ahi_color = "#D32F2F" if float(log.get("ahi", 0)) > 5 else "#1E7E34"
+    if not report_data.pdf_base64:
+        raise HTTPException(status_code=404, detail="PDF data not found in this record.")
         
-        usage = str(log.get("usage_hours", "0"))
-        if len(usage) > 4: usage = usage[:4]
-        is_compliant = float(usage) >= 4 if usage.replace('.','',1).isdigit() else False
-        usage_badge = '<span style="color:#2E7D32;">&ge;4h</span>' if is_compliant else '<span style="color:#E65100;">&lt;4h</span>'
-        
-        table_rows += f"""
-        <tr style="background:{row_bg};">
-            <td>{log.get("date", "--")}</td>
-            <td>{usage} {usage_badge}</td>
-            <td>{log.get("therapy_type", "CPAP")}</td>
-            <td>{log.get("pressure_avg", "0")}</td>
-            <td>{log.get("avg_flow", "0")}</td>
-            <td>{log.get("leak_rate", "0")}</td>
-            <td>{log.get("avg_resp_rate", "0")}</td>
-            <td style="color:{ahi_color};font-weight:bold;">{log.get("ahi", "0")}</td>
-            <td>{log.get("mask_fault_count", "0")}</td>
-            <td>{log.get("low_pressure_count", "0")}</td>
-        </tr>
-        """
-        
-    date_str = datetime.utcnow().strftime('%d-%m-%Y')
-    
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <meta charset="UTF-8">
-    <style>
-    @page {{ size: a4 portrait; margin: 1cm; }}
-    * {{ box-sizing:border-box; margin:0; padding:0; }}
-    body {{ font-family:Helvetica, sans-serif; font-size:11px; color:#1a1a2e; background:#fff; }}
-    .hdr-banner {{ background:#ffffff; border:2px solid #065F46; color:#065F46; padding:16px 22px; border-radius:10px; margin-bottom:18px; }}
-    .hdr-banner h1 {{ font-size:20px; font-weight:bold; letter-spacing:1px; margin:0; }}
-    .hdr-banner .hdr-sub {{ font-size:10px; margin-top:3px; color:#065F46; }}
-    .sec-title {{ font-size:12px; font-weight:bold; color:#065F46; border-left:4px solid #10B981; padding-left:8px; margin-bottom:9px; margin-top:14px; }}
-    .ig {{ width:100%; border-collapse:collapse; }}
-    .ig td {{ padding:4px 7px; font-size:11px; }}
-    .lbl {{ color:#374151; font-weight:bold; width:130px; }}
-    .val {{ color:#1a1a2e; }}
-    .hr-dash {{ border:none; border-top:1.5px dashed #34D399; margin:12px 0; }}
-    .hr-blue {{ border:none; border-top:2px solid #10B981; margin:14px 0; }}
-    .dt {{ width:100%; border-collapse:collapse; font-size:9.5px; margin-top:6px; }}
-    .dt th {{ background:#065F46; color:#fff; padding:5px 3px; text-align:center; font-size:9px; border:1px solid #065F46; }}
-    .dt td {{ border:1px solid #D1FAE5; padding:5px 3px; text-align:center; }}
-    .sig-table {{ width: 100%; margin-top: 50px; text-align: center; }}
-    .sig-line {{ border-top: 1px solid #333; width: 150px; margin: 0 auto; }}
-    .page-break {{ pdf-page-break-before: always; }}
-    .graph-box {{ border: 1px solid #D1FAE5; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center; background: #F9FAFB; }}
-    .graph-title {{ font-size:12px; font-weight:bold; color:#065F46; margin-bottom: 10px; }}
-    </style>
-    </head>
-    <body>
-    <div class="hdr-banner">
-        <table width="100%">
-            <tr>
-                <td width="50%">
-                    <h1>Therapy Report</h1>
-                    <div class="hdr-sub">Airsine CPAP Clinical Summary</div>
-                </td>
-                <td width="50%" align="right" style="font-size:10px;">
-                    <b>Report Date:</b> {date_str}<br/>
-                    <b>Total Days:</b> {len(filtered_logs)}<br/>
-                    <b>Device:</b> {patient_details.get("machine_serial", "-")}
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="sec-title">Patient Details</div>
-    <table class="ig">
-        <tr>
-            <td class="lbl">Patient ID:</td><td class="val">P-{patient_details.get("patient_custom_id", patient_details.get("id", "-"))}</td>
-            <td class="lbl">Full Name:</td><td class="val">{patient_details.get("name", report_data.app_user_name)}</td>
-        </tr>
-        <tr>
-            <td class="lbl">Gender:</td><td class="val">{patient_details.get("gender", "-")}</td>
-            <td class="lbl">Date of Birth:</td><td class="val">{patient_details.get("dob", "-")}</td>
-        </tr>
-        <tr>
-            <td class="lbl">Phone:</td><td class="val">{patient_details.get("phone", "-")}</td>
-            <td class="lbl">Email:</td><td class="val">{patient_details.get("email", report_data.app_user_email)}</td>
-        </tr>
-    </table>
-
-    <hr class="hr-dash"/>
-    <div class="sec-title">Referring Physician</div>
-    <table class="ig">
-        <tr>
-            <td class="lbl">Doctor Name:</td><td class="val">{patient_details.get("doctor_name", "-")}</td>
-            <td class="lbl">Doctor Phone:</td><td class="val">{patient_details.get("doctor_phone", "-")}</td>
-        </tr>
-    </table>
-
-    <hr class="hr-blue"/>
-
-    <div class="sec-title">Daily Therapy Log</div>
-    <table class="dt">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Usage (H:M)</th>
-                <th>Mode</th>
-                <th>Pressure<br/>(cmH2O)</th>
-                <th>Flow<br/>(L/min)</th>
-                <th>Leak<br/>(L/min)</th>
-                <th>Resp<br/>Rate</th>
-                <th>AHI</th>
-                <th>Open<br/>Mask</th>
-                <th>Low<br/>Press</th>
-            </tr>
-        </thead>
-        <tbody>
-            {table_rows}
-        </tbody>
-    </table>
-
-  
-
- 
-    </body>
-    </html>
-    """
-    
-    # Create PDF
-    buffer = io.BytesIO()
-    pisa_status = pisa.CreatePDF(io.StringIO(html_content), dest=buffer)
-    
-    if pisa_status.err:
-        raise HTTPException(status_code=500, detail="Error generating PDF")
-        
-    pdf_bytes = buffer.getvalue()
-    buffer.close()
+    import base64
+    try:
+        # If it contains a prefix like data:application/pdf;base64,... strip it
+        b64_str = report_data.pdf_base64
+        if ',' in b64_str:
+            b64_str = b64_str.split(',', 1)[1]
+        pdf_bytes = base64.b64decode(b64_str)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error decoding PDF data")
     
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f"attachment; filename=Airsine_Report_{days}days.pdf"
+            "Content-Disposition": f"attachment; filename=Airsine_Report_{report_data.total_days}days.pdf"
         }
     )
 

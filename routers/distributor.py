@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from database import SessionLocal
 import models
 import os, shutil
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from utils import paginate
 from schemas import OrderCreate, OrderResponse
 
@@ -48,7 +49,7 @@ def distributor_section(request: Request, db: Session = Depends(get_db)):
         }
     }
 
-# DISTRIBUTOR ALL ORDERS (Filtered by products they own)
+# DISTRIBUTOR ALL ORDERS (Filtered to show distributor's own orders)
 @router.get("/orders")
 def distributor_orders(request: Request, db: Session = Depends(get_db)):
     current_user = request.state.user
@@ -56,10 +57,10 @@ def distributor_orders(request: Request, db: Session = Depends(get_db)):
     if current_user["role"] != "distributor":
         raise HTTPException(status_code=403, detail="Access denied")
 
-    # Join with Product to filter by distributor_id
-    orders = db.query(models.Order).join(models.Product).filter(
-        models.Product.distributor_id == current_user["user_id"]
-    ).all()
+    # Filter to show the distributor's own orders
+    orders = db.query(models.Order).filter(
+        models.Order.user_id == current_user["user_id"]
+    ).order_by(models.Order.order_date.desc()).all()
 
     result = []
 
@@ -74,6 +75,8 @@ def distributor_orders(request: Request, db: Session = Depends(get_db)):
             "product_type": product.product_type if product else "N/A",
             "quantity": o.quantity if o.quantity else 1,
             "total_amount": o.total_amount,
+            "discount_amount": o.discount_amount or 0,
+            "final_amount": o.final_amount if o.final_amount is not None else o.total_amount,
             "currency": o.currency,
             "status": (
                 "PENDING" if o.status == 0 else
@@ -136,7 +139,7 @@ def distributor_dashboard(request: Request, db: Session = Depends(get_db)):
     }
 
 
-# DISTRIBUTOR TRANSACTIONS (Filtered)
+# DISTRIBUTOR TRANSACTIONS (Filtered to show distributor's own orders)
 @router.get("/transactions")
 def distributor_transactions(request: Request, db: Session = Depends(get_db)):
     current_user = request.state.user
@@ -144,8 +147,8 @@ def distributor_transactions(request: Request, db: Session = Depends(get_db)):
     if current_user["role"] != "distributor":
         raise HTTPException(status_code=403, detail="Access denied")
 
-    orders = db.query(models.Order).join(models.Product).filter(
-        models.Product.distributor_id == current_user["user_id"]
+    orders = db.query(models.Order).filter(
+        models.Order.user_id == current_user["user_id"]
     ).order_by(
         models.Order.order_date.desc()
     ).limit(10).all()
@@ -163,6 +166,8 @@ def distributor_transactions(request: Request, db: Session = Depends(get_db)):
             "product_type": product.product_type if product else "N/A",
             "quantity": o.quantity,
             "total_amount": o.total_amount,
+            "discount_amount": o.discount_amount or 0,
+            "final_amount": o.final_amount if o.final_amount is not None else o.total_amount,
             "currency": o.currency,
             "status": (
                 "PENDING" if o.status == 0 else
@@ -319,7 +324,7 @@ def distributor_buy_machine(
 def get_distributor_personal_orders(
     request: Request,
     page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
     current_user = request.state.user
@@ -362,9 +367,9 @@ def get_distributor_summary(request: Request, db: Session = Depends(get_db)):
     if current_user["role"] != "distributor":
         raise HTTPException(status_code=403, detail="Access denied")
 
-    # Base query for orders related to this distributor's products
-    orders_query = db.query(models.Order).join(models.Product).filter(
-        models.Product.distributor_id == current_user["user_id"]
+    # Base query for orders placed by the distributor themselves
+    orders_query = db.query(models.Order).filter(
+        models.Order.user_id == current_user["user_id"]
     )
     
     total_received = orders_query.count()
@@ -388,6 +393,9 @@ def get_distributor_summary(request: Request, db: Session = Depends(get_db)):
         models.Notification.is_read == False
     ).count()
 
+    # Calculate total machines purchased by the distributor themselves
+    machines_purchased = orders_query.count()
+
     # Formatting Helper
     def format_currency(val):
         if val >= 100000:
@@ -397,11 +405,12 @@ def get_distributor_summary(request: Request, db: Session = Depends(get_db)):
         return f"₹{val:.0f}"
 
     return {
-        "sales": {
-            "title": "Total Sales",
-            "value": format_currency(revenue),
-            "subtitle": "Overall",
-            "icon": "currency-inr",
+        "machines": {
+            "title": "Total Machine Sell",
+            "value": f"{machines_purchased}",
+            "unit": "units",
+            "subtitle": "Purchased by you",
+            "icon": "cube-outline",
             "color": "#0ea5e9"
         },
         "profit": {
@@ -412,10 +421,10 @@ def get_distributor_summary(request: Request, db: Session = Depends(get_db)):
             "color": "#10B981"
         },
         "orders": {
-            "title": "Pending Orders",
-            "value": f"{pending_orders_count:02d}",
-            "unit": "units",
-            "subtitle": f"Total: {total_received}",
+            "title": "Total Orders",
+            "value": f"{total_received:02d}" if total_received > 0 else "0",
+            "unit": "orders",
+            "subtitle": f"Pending: {pending_orders_count:02d}",
             "icon": "package-variant",
             "color": "#8B5CF6"
         },
@@ -478,4 +487,126 @@ def distributor_support_query(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
+
+
+# ✅ DISTRIBUTOR REPORTS DATA (Real Data Analytics)
+@router.get("/reports-data")
+def get_distributor_reports_data(request: Request, db: Session = Depends(get_db)):
+    current_user = request.state.user
+    if current_user["role"] != "distributor":
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    user_id = current_user["user_id"]
+    today = date.today()
+    today_start = datetime.combine(today, datetime.min.time())
+
+    # Get total orders purchased overall
+    total_qty_query = db.query(func.count(models.Order.id)).filter(
+        models.Order.user_id == user_id
+    ).scalar()
+    total_qty = int(total_qty_query) if total_qty_query else 0
+
+    # Get first order date to determine active period
+    first_order = db.query(models.Order.order_date).filter(
+        models.Order.user_id == user_id
+    ).order_by(models.Order.order_date.asc()).first()
+
+    if first_order:
+        days = (datetime.utcnow() - first_order.order_date).days + 1
+        months = ((datetime.utcnow().year - first_order.order_date.year) * 12 + datetime.utcnow().month - first_order.order_date.month) + 1
+    else:
+        days = 1
+        months = 1
+
+    # Calculate average daily and monthly purchases
+    avg_daily_qty = round(total_qty / days, 2)
+    avg_monthly_qty = round(total_qty / months, 1)
+
+    # 3. Weekly Purchases (Last 7 days ending today)
+    weekly_labels = []
+    weekly_values = []
+    
+    for i in range(6, -1, -1):
+        day_start = today_start - timedelta(days=i)
+        day_end = day_start + timedelta(days=1)
+        day_qty = db.query(func.count(models.Order.id)).filter(
+            models.Order.user_id == user_id,
+            models.Order.order_date >= day_start,
+            models.Order.order_date < day_end
+        ).scalar()
+        weekly_labels.append(day_start.strftime('%a'))
+        weekly_values.append(int(day_qty) if day_qty else 0)
+
+    # 4. Monthly Discount Trend (Last 6 Months)
+    monthly_discount_labels = []
+    monthly_discount_values = []
+    
+    for i in range(5, -1, -1):
+        target_month = today.month - i
+        target_year = today.year
+        while target_month <= 0:
+            target_month += 12
+            target_year -= 1
+            
+        m_start = datetime(target_year, target_month, 1)
+        if target_month == 12:
+            m_end = datetime(target_year + 1, 1, 1)
+        else:
+            m_end = datetime(target_year, target_month + 1, 1)
+            
+        discount_sum = db.query(func.sum(models.Order.discount_amount)).filter(
+            models.Order.user_id == user_id,
+            models.Order.order_date >= m_start,
+            models.Order.order_date < m_end
+        ).scalar()
+        
+        monthly_discount_labels.append(m_start.strftime('%b'))
+        monthly_discount_values.append(float(discount_sum) if discount_sum else 0.0)
+
+    # 5. Top Performing Products
+    top_products_query = db.query(
+        models.Order.product_id,
+        func.count(models.Order.id).label('total_qty')
+    ).filter(
+        models.Order.user_id == user_id
+    ).group_by(
+        models.Order.product_id
+    ).order_by(
+        func.count(models.Order.id).desc()
+    ).limit(3).all()
+    
+    top_products = []
+    for item in top_products_query:
+        product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
+        if product:
+            top_products.append({
+                "name": product.product_name,
+                "sales": f"{item.total_qty} Units",
+                "growth": "+10%"
+            })
+            
+    if not top_products:
+        top_products = [
+            { "name": "No orders placed yet", "sales": "0 Units", "growth": "0%" }
+        ]
+
+    return {
+        "daily_purchases": {
+            "value": f"{avg_daily_qty} Units",
+            "trend": "Avg. daily purchases"
+        },
+        "monthly_purchases": {
+            "value": f"{avg_monthly_qty} Units",
+            "trend": "Avg. monthly purchases"
+        },
+        "weekly_purchases_chart": {
+            "labels": weekly_labels,
+            "values": weekly_values
+        },
+        "discount_chart": {
+            "labels": monthly_discount_labels,
+            "values": monthly_discount_values
+        },
+        "top_products": top_products
+    }
+

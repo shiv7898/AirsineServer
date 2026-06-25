@@ -19,16 +19,16 @@ def get_db():
     finally:
         db.close()
 
-# ✅ BUY MACHINE
-@router.post("/buy-machine", response_model=OrderResponse)
-def buy_machine(order: OrderCreate, request: Request, db: Session = Depends(get_db)):
+# ✅ BUY MACHINE (PATIENT / DOCTOR)
+@router.post("/customer/buy-machine", response_model=OrderResponse)
+def buy_machine_customer(order: OrderCreate, request: Request, db: Session = Depends(get_db)):
     try:
         current_user = request.state.user
 
-        if current_user["role"] not in ["patient", "doctor", "distributor"]:
+        if current_user["role"] not in ["patient", "doctor"]:
             raise HTTPException(
                 status_code=403,
-                detail="Only patient, doctor or distributor can buy"
+                detail="Only patient or doctor can buy through this API"
             )
 
         # CHECK PRODUCT
@@ -44,14 +44,15 @@ def buy_machine(order: OrderCreate, request: Request, db: Session = Depends(get_
 
         # TOTAL PRICE
         total = product.unit_price * order.quantity
-
-        discount_amount = 0
-        final_amount = total    
+        
+        # Product Specific Customer Discount
+        cust_discount_pct = product.customer_discount or 0.0
+        product_discount_amount = total * (cust_discount_pct / 100.0)
+        discounted_base = total - product_discount_amount
 
         # ✅ APPLY REFERRAL DISCOUNT FROM REFERRAL_CODES OR FALLBACK USER REFERRAL
-        discount_amount = 0
-        final_amount = total    
-
+        referral_discount_amount = 0
+        
         if order.referral_code:
             # 1. Check custom referral codes table first
             referral = db.query(models.ReferralCode).filter(
@@ -62,9 +63,7 @@ def buy_machine(order: OrderCreate, request: Request, db: Session = Depends(get_
 
             if referral:
                 discount_percent = referral.discount_percent / 100.0
-                discount_amount = total * discount_percent
-                final_amount = total - discount_amount
-                # Increment used count
+                referral_discount_amount = discounted_base * discount_percent
                 referral.used_count = (referral.used_count or 0) + 1
             else:
                 # 2. Fallback to check if it's another user's referral code
@@ -73,8 +72,11 @@ def buy_machine(order: OrderCreate, request: Request, db: Session = Depends(get_
                 ).first()
 
                 if referral_user:
-                    discount_amount = total * 0.10  # Default 10% for user referrals
-                    final_amount = total - discount_amount
+                    referral_discount_amount = discounted_base * 0.10  # Default 10% for user referrals
+
+        final_amount = discounted_base - referral_discount_amount
+        total_discount_amount = product_discount_amount + referral_discount_amount
+
         # CREATE ORDER
         new_order = models.Order(
             user_id=current_user["user_id"],
@@ -82,23 +84,21 @@ def buy_machine(order: OrderCreate, request: Request, db: Session = Depends(get_
             quantity=order.quantity,
             referral_code=order.referral_code,
             customer_name=order.customer_name,
-            customer_phone=order.customer_phone,
+            customer_phone=str(order.customer_phone),
             total_amount=total,
-            discount_amount=discount_amount,
+            discount_amount=total_discount_amount,
             final_amount=final_amount,
             currency="INR",
             building=order.building,
             locality=order.locality,
             district=order.district,
             state=order.state,
-            pincode=order.pincode,
+            pincode=str(order.pincode),
         )
 
         db.add(new_order)
         db.commit()
         db.refresh(new_order)
-
-        print(f"Order Created: {new_order.id}")
 
         return {
             "id": new_order.id,
@@ -107,21 +107,90 @@ def buy_machine(order: OrderCreate, request: Request, db: Session = Depends(get_
             "total_amount": new_order.total_amount,
             "discount_amount": new_order.discount_amount,
             "final_amount": new_order.final_amount,
-            "status": "PENDING", # Explicitly return string as per schema
+            "status": "PENDING",
             "order_date": new_order.order_date
         }
 
     except HTTPException:
         raise
-
     except Exception as e:
         import traceback
-        print("BUY MACHINE ERROR:")
+        print("BUY MACHINE (CUSTOMER) ERROR:")
         print(traceback.format_exc())
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ✅ BUY MACHINE (DISTRIBUTOR)
+@router.post("/distributor/buy-machine", response_model=OrderResponse)
+def buy_machine_distributor(order: OrderCreate, request: Request, db: Session = Depends(get_db)):
+    try:
+        current_user = request.state.user
+
+        if current_user["role"] != "distributor":
+            raise HTTPException(
+                status_code=403,
+                detail="Only distributor can buy through this API"
+            )
+
+        # CHECK PRODUCT
+        product = db.query(models.Product).filter(
+            models.Product.id == order.product_id
+        ).first()
+
+        if not product:
+            raise HTTPException(
+                status_code=404,
+                detail="Product not found"
+            )
+
+        # TOTAL PRICE
+        total = product.unit_price * order.quantity
+        
+        # Product Specific Distributor Discount
+        dist_discount_pct = product.distributor_discount or 0.0
+        total_discount_amount = total * (dist_discount_pct / 100.0)
+        final_amount = total - total_discount_amount
+
+        # CREATE ORDER
+        new_order = models.Order(
+            user_id=current_user["user_id"],
+            product_id=order.product_id,
+            quantity=order.quantity,
+            referral_code=None,  # Distributors don't use referrals in this flow
+            customer_name=order.customer_name,
+            customer_phone=str(order.customer_phone),
+            total_amount=total,
+            discount_amount=total_discount_amount,
+            final_amount=final_amount,
+            currency="INR",
+            building=order.building,
+            locality=order.locality,
+            district=order.district,
+            state=order.state,
+            pincode=str(order.pincode),
         )
+
+        db.add(new_order)
+        db.commit()
+        db.refresh(new_order)
+
+        return {
+            "id": new_order.id,
+            "product_id": new_order.product_id,
+            "quantity": new_order.quantity,
+            "total_amount": new_order.total_amount,
+            "discount_amount": new_order.discount_amount,
+            "final_amount": new_order.final_amount,
+            "status": "PENDING",
+            "order_date": new_order.order_date
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print("BUY MACHINE (DISTRIBUTOR) ERROR:")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ✅ MY ORDERS (With Pagination)
 @router.get("/my-orders")
@@ -135,7 +204,7 @@ def my_orders(
     Get user's orders with pagination
     """
     current_user = request.state.user
-    query = db.query(models.Order).filter(models.Order.user_id == current_user["user_id"])
+    query = db.query(models.Order).filter(models.Order.user_id == current_user["user_id"]).order_by(models.Order.order_date.desc())
     
     # Get paginated orders
     paginated = paginate(query, page=page, limit=limit)

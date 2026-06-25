@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.openapi.utils import get_openapi
 from fastapi.exceptions import RequestValidationError
@@ -79,6 +79,22 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/admin-ui", StaticFiles(directory="static/admin"), name="admin-ui")
+
+@app.get("/admin-dashboard")
+@app.get("/dashboard")
+@app.get("/users")
+@app.get("/create-staff")
+@app.get("/products-admin")
+@app.get("/orders-admin")
+@app.get("/queries-admin")
+async def serve_admin_dashboard():
+    return FileResponse("static/admin/index.html")
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to Airsine"}
+
 # CORSMiddleware will be added after routers to ensure it runs first in the stack
 
 from routers import products
@@ -89,6 +105,7 @@ from routers import doctor
 from routers import distributor
 from routers import report
 from routers import admin
+from routers import support
 app.include_router(products.router)
 app.include_router(auth_routes.router)
 app.include_router(orders.router)
@@ -97,12 +114,19 @@ app.include_router(doctor.router)
 app.include_router(distributor.router)
 app.include_router(report.router)
 app.include_router(admin.router)
+app.include_router(support.router)
 
 # ✅ Auth Middleware
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
-    open_routes = ["/register", "/login", "/docs", "/openapi.json", "/products", "/redoc", "/admin/create-super-admin", "/uploads"]
-    if request.method == "OPTIONS" or any(request.url.path.startswith(r) for r in open_routes):
+    open_routes = [
+        "/register", "/login", "/docs", "/openapi.json", "/products", 
+        "/redoc", "/admin/create-super-admin", "/uploads", 
+        "/admin-dashboard", "/admin-ui", "/favicon.ico",
+        "/dashboard", "/users", "/create-staff", "/products-admin",
+        "/orders-admin", "/queries-admin", "/.well-known"
+    ]
+    if request.method == "OPTIONS" or request.url.path == "/" or any(request.url.path.startswith(r) for r in open_routes):
         return await call_next(request)
     
     token = request.headers.get("Authorization")

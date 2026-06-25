@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airsine | Super Admin Panel</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-glass-hover: rgba(255, 255, 255, 0.95);
+            --border-glass: rgba(226, 232, 240, 0.8);
+            --accent-primary: #0ea5e9; /* Sky Blue */
+            --accent-primary-glow: rgba(14, 165, 233, 0.2);
+            --accent-secondary: #0284c7; /* Darker Blue */
+            --accent-success: #10b981; /* Emerald */
+            --accent-danger: #ef4444; /* Red */
+            --text-primary: #0f172a; /* Slate 900 */
+            --text-muted: #64748b; /* Slate 500 */
+            --font-main: 'Outfit', sans-serif;
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) transparent;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+        /* --- Toast Notification --- */
+        .toast {
+            position: fixed; top: 20px; right: 20px; padding: 16px 24px;
+            border-radius: 16px; background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border-glass); color: var(--text-primary);
+            z-index: 1000; display: flex; align-items: center; gap: 12px;
+            transform: translateY(-50px) scale(0.95); opacity: 0;
+            transition: var(--transition-smooth); backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-soft); font-weight: 500;
+        }
+        .toast.show { transform: translateY(0) scale(1); opacity: 1; }
+        .toast.success { border-left: 4px solid var(--accent-success); }
+        .toast.error { border-left: 4px solid var(--accent-danger); }
+
+        /* ================= AUTHENTICATION PAGE ================= */
+        .auth-container {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+        .auth-card {
+            background: var(--bg-glass); backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px); border: 1px solid var(--border-glass);
+            border-radius: 28px; width: 100%; max-width: 440px; padding: 48px;
+            box-shadow: var(--shadow-hover); animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .auth-header { text-align: center; margin-bottom: 36px; }
+        .auth-header img { width: 72px; height: auto; margin-bottom: 16px; filter: drop-shadow(0 10px 15px var(--accent-primary-glow)); }
+        .auth-header h2 { font-size: 32px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; }
+        .auth-header p { color: var(--text-muted); margin-top: 8px; font-size: 15px; }
+        .form-group { margin-bottom: 24px; position: relative; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 18px; transition: var(--transition-smooth); }
+        .input-wrapper input, .input-wrapper select, .input-wrapper textarea {
+            width: 100%; padding: 16px 16px 16px 48px; background: #ffffff;
+            border: 2px solid transparent; border-radius: 16px; color: var(--text-primary);
+            font-size: 15px; outline: none; transition: var(--transition-smooth);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .input-wrapper input:focus, .input-wrapper select:focus, .input-wrapper textarea:focus {
+            border-color: var(--accent-primary); background: #ffffff;
+            box-shadow: 0 0 0 4px var(--accent-primary-glow);
+        }
+        .input-wrapper input:focus + i { color: var(--accent-primary); }
+        .btn-submit {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none; border-radius: 16px; color: #ffffff; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: var(--transition-smooth); margin-top: 12px;
+            box-shadow: 0 10px 20px var(--accent-primary-glow); letter-spacing: 0.5px;
+        }
+        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(14, 165, 233, 0.3); }
+
+        /* ================= DASHBOARD LAYOUT ================= */
+        .dashboard-container {
+            display: none; min-height: 100vh;
+            grid-template-columns: 280px 1fr;
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-btn {
+            display: none; position: fixed; top: 20px; right: 20px; z-index: 100;
+            background: #fff; border: 1px solid var(--border-glass);
+            width: 44px; height: 44px; border-radius: 12px;
+            font-size: 20px; color: var(--text-primary); cursor: pointer;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px); border-right: 1px solid var(--border-glass);
+            padding: 32px 24px; display: flex; flex-direction: column; justify-content: space-between;
+            position: sticky; top: 0; height: 100vh; transition: transform 0.3s ease;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 16px; margin-bottom: 48px; }
+        .logo-area img { width: 44px; border-radius: 12px; box-shadow: var(--shadow-soft); }
+        .logo-area span { font-size: 24px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; }
+
+        .nav-links { list-style: none; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+        .nav-item {
+            display: flex; align-items: center; gap: 16px; padding: 14px 20px;
+            border-radius: 14px; color: var(--text-muted); text-decoration: none;
+            cursor: pointer; font-weight: 600; font-size: 15px; transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }
+        .nav-item:hover { color: var(--text-primary); background: #ffffff; box-shadow: var(--shadow-soft); }
+        .nav-item.active {
+            color: var(--accent-secondary); background: #ffffff;
+            border-color: var(--border-glass); box-shadow: var(--shadow-soft);
+        }
+        .nav-item.active i { color: var(--accent-primary); }
+        .nav-item i { font-size: 20px; width: 24px; text-align: center; transition: var(--transition-smooth); }
+
+        .user-profile {
+            display: flex; align-items: center; gap: 16px; padding: 24px 0 0 0;
+            border-top: 1px solid var(--border-glass);
+        }
+        .profile-pic {
+            width: 48px; height: 48px; border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex; justify-content: center; align-items: center;
+            font-weight: 700; color: #ffffff; font-size: 18px; box-shadow: var(--shadow-soft);
+        }
+        .profile-info h4 { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        .profile-info p { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+        /* --- Main Content Area --- */
+        .main-content { padding: 32px 40px; overflow-y: auto; max-height: 100vh; }
+        .header-dashboard { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
+        .header-dashboard h1 { font-size: 28px; font-weight: 700; letter-spacing: -1px; color: var(--text-primary); }
+        .header-dashboard p { color: var(--text-muted); margin-top: 4px; font-size: 14px; }
+
+        /* --- Cards Grid --- */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 16px; margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--bg-glass); border: 1px solid var(--border-glass);
+            border-radius: 20px; padding: 20px 24px; display: flex; align-items: center;
+            justify-content: space-between; transition: var(--transition-smooth);
+            backdrop-filter: blur(12px); box-shadow: var(--shadow-soft); position: relative; overflow: hidden;
+        }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent-primary); opacity: 0; transition: var(--transition-smooth);
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); border-color: rgba(14, 165, 233, 0.2); }
+        .stat-card:hover::before { opacity: 1; }
+        .stat-card-left h3 { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .stat-card-left p { font-size: 28px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; }
+        .stat-card-right {
+            width: 48px; height: 48px; border-radius: 14px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(14, 165, 233, 0.05));
+            color: var(--accent-primary); display: flex; justify-content: center; align-items: center; font-size: 22px;
+        }
+
+        /* --- Visual Section --- */
+        .dashboard-body-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; margin-bottom: 48px; }
+        .dashboard-panel {
+            background: var(--bg-glass); border: 1px solid var(--border-glass);
+            border-radius: 28px; padding: 36px; backdrop-filter: blur(12px); box-shadow: var(--shadow-soft);
+        }
+        .dashboard-panel h2 { font-size: 22px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; color: var(--text-primary); letter-spacing: -0.5px; }
+
+        /* --- Table Styling --- */
+        .table-container { overflow-y: auto; max-height: calc(100vh - 250px); width: 100%; border-radius: 0 0 28px 28px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+        th {
+            padding: 12px 16px; color: var(--text-muted); font-size: 12px; font-weight: 700;
+            border-bottom: 2px solid var(--border-glass); text-transform: uppercase; letter-spacing: 1px; 
+            background: rgba(248, 250, 252, 0.95); backdrop-filter: blur(8px);
+            position: sticky; top: 0; z-index: 10;
+        }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border-glass); font-size: 14px; color: var(--text-primary); font-weight: 500; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(14, 165, 233, 0.03); }
+
+        .badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; text-transform: capitalize;
+        }
+        .badge.super_admin { background: rgba(168, 85, 247, 0.1); color: #9333ea; }
+        .badge.admin { background: rgba(14, 165, 233, 0.1); color: #0284c7; }
+        .badge.sub_admin { background: rgba(16, 185, 129, 0.1); color: #059669; }
+        .badge.doctor { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+        .badge.patient { background: rgba(6, 182, 212, 0.1); color: #0891b2; }
+        .badge.distributor { background: rgba(236, 72, 153, 0.1); color: #db2777; }
+
+        .btn-action {
+            background: #ffffff; border: 1px solid var(--border-glass); width: 38px; height: 38px; border-radius: 10px;
+            color: var(--text-muted); cursor: pointer; display: inline-flex; justify-content: center; align-items: center;
+            transition: var(--transition-smooth); box-shadow: 0 2px 5px rgba(0,0,0,0.02); font-size: 15px; margin: 0 2px;
+        }
+        .btn-action:hover { color: var(--accent-danger); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); transform: translateY(-2px); box-shadow: 0 5px 10px rgba(239, 68, 68, 0.1); }
+        .btn-action.btn-edit { color: #6366f1; border-color: rgba(99,102,241,0.2); }
+        .btn-action.btn-edit:hover { color: #4f46e5; border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.06); box-shadow: 0 5px 10px rgba(99,102,241,0.12); }
+
+        /* --- Permissions Section --- */
+        .permissions-section-label {
+            font-size: 14px; font-weight: 700; color: var(--text-primary);
+            letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;
+            border-bottom: 1px solid var(--border-glass); padding-bottom: 10px; margin-bottom: 16px;
+        }
+        .permissions-section-label i { color: var(--accent-primary); }
+        .perm-module {
+            background: rgba(255,255,255,0.55); padding: 16px 18px; border-radius: 14px;
+            border: 1px solid var(--border-glass); transition: var(--transition-smooth);
+            backdrop-filter: blur(6px);
+        }
+        .perm-module:hover { box-shadow: 0 4px 18px rgba(14,165,233,0.08); border-color: rgba(14,165,233,0.25); }
+        .perm-module h4 {
+            margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: var(--text-primary);
+            text-transform: uppercase; letter-spacing: 0.6px; display: flex; align-items: center; gap: 6px;
+        }
+        .perm-module h4 i { color: var(--accent-primary); font-size: 12px; }
+        .perm-checkbox-row { display: flex; gap: 14px; flex-wrap: wrap; }
+        .perm-checkbox-label {
+            font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px;
+            cursor: pointer; color: var(--text-secondary); padding: 5px 10px;
+            border: 1px solid var(--border-glass); border-radius: 8px;
+            transition: var(--transition-smooth); user-select: none; background: rgba(255,255,255,0.4);
+        }
+        .perm-checkbox-label:hover { border-color: rgba(14,165,233,0.35); color: var(--accent-primary); background: rgba(14,165,233,0.05); }
+        .perm-checkbox-label input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent-primary); cursor: pointer; }
+        .perm-checkbox-label input[type="checkbox"]:checked + span { color: var(--accent-primary); }
+
+        /* --- Panel Pages --- */
+        .panel-page { display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .panel-page.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Form layout --- */
+        .staff-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 768px) { .staff-form-grid { grid-template-columns: 1fr; } }
+        .form-group { margin-bottom: 0; position: relative; }
+        .form-group label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-wrapper input, .input-wrapper select, .input-wrapper textarea {
+            padding: 12px 12px 12px 44px; font-size: 14px; border-radius: 12px;
+        }
+
+        /* --- Form Section Card --- */
+        .form-section {
+            border: 1px solid var(--border-glass); border-radius: 18px;
+            padding: 20px 24px; background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(6px); margin-bottom: 16px;
+        }
+        .form-section-title {
+            font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: 0.8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+        }
+        .form-section-title i { color: var(--accent-primary); font-size: 13px; }
+        .form-section-title::after {
+            content: ''; flex: 1; height: 1px; background: var(--border-glass); margin-left: 8px;
+        }
+        .col-span-2 { grid-column: span 2; }
+        @media (max-width: 768px) { .col-span-2 { grid-column: span 1; } }
+
+        /* Loader Overlay */
+        .loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px);
+            z-index: 2000; display: none; justify-content: center; align-items: center;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 4px solid var(--border-glass);
+            border-top: 4px solid var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+        .filter-select { padding: 12px 16px; background: #ffffff; border: 1px solid var(--border-glass); border-radius: 12px; color: var(--text-primary); outline: none; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; }
+
+        /* Responsiveness */
+        @media (max-width: 1024px) {
+            .dashboard-body-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; transform: translateX(-100%); z-index: 90; width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            .mobile-menu-btn { display: flex; justify-content: center; align-items: center; }
+            .main-content { padding: 80px 20px 30px; }
+            .header-dashboard h1 { font-size: 28px; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast message -->
+    <div id="toast" class="toast">
+        <i id="toast-icon" class="fa-solid"></i>
+        <span id="toast-msg">Success</span>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- View User Modal -->
+    <div id="view-user-modal" class="loader-overlay" style="z-index: 2100;">
+        <div class="form-section" style="width: 100%; max-width: 700px; background: #fff; max-height: 90vh; overflow-y: auto;">
+            <div class="form-section-title" style="justify-content: space-between;">
+                <span><i class="fa-solid fa-address-card"></i> View User Profile</span>
+                <button onclick="closeModal('view-user-modal')" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <div id="view-user-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="loader-overlay" style="z-index: 2100;">
+        <div class="form-section" style="width: 100%; max-width: 700px; background: #fff; max-height: 90vh; overflow-y: auto;">
+            <div class="form-section-title" style="justify-content: space-between;">
+                <span><i class="fa-solid fa-user-pen"></i> Edit User Info</span>
+                <button onclick="closeModal('edit-user-modal')" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <form id="edit-user-form">
+                <input type="hidden" id="edit-user-id">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group"><label>Name</label><input type="text" id="edit-name" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;" required></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="edit-email" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;" required></div>
+                    <div class="form-group"><label>Phone</label><input type="text" id="edit-phone" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;"></div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="edit-role" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;" disabled>
+                            <option value="patient">Patient</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="distributor">Distributor</option>
+                            <option value="sub_admin">Sub Admin</option>
+                            <option value="admin">Admin</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Age</label><input type="number" id="edit-age" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;"></div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="edit-gender" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;">
+                            <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Additional Fields -->
+                    <div class="form-group"><label>Hospital (For Doctors)</label><input type="text" id="edit-hospital" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;"></div>
+                    <div class="form-group"><label>Specialisation</label><input type="text" id="edit-specialisation" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;"></div>
+                    <div class="form-group"><label>Company Name (Distributor)</label><input type="text" id="edit-company-name" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;"></div>
+                    <div class="form-group"><label>License Number</label><input type="text" id="edit-license-number" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;"></div>
+                    
+                    <div class="form-group col-span-2"><label>Address</label><input type="text" id="edit-address" style="width: 100%; padding: 8px; border: 1px solid var(--border-glass); border-radius: 8px;"></div>
+                </div>
+                <button type="submit" class="btn-submit" style="margin-top: 20px;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= AUTH CONTAINER ================= -->
+    <div id="auth-page" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Airsine</h2>
+                <p>Super Admin Panel Login</p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="login-email" placeholder="admin@airsine.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-password" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD CONTAINER ================= -->
+    <div id="dashboard-page" class="dashboard-container">
+        <!-- Sidebar -->
+        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <aside class="sidebar">
+            <div>
+                <div class="logo-area">
+                    <img src="/admin-ui/airsine-logo.png" alt="Airsine Logo">
+                    <span>Airsine</span>
+                </div>
+                <ul class="nav-links">
+                    <li>
+                        <div onclick="switchTab('dashboard-view')" id="nav-dashboard-view" class="nav-item active">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <span>Dashboard Overview</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div onclick="switchTab('users-view')" id="nav-users-view" class="nav-item">
+                            <i class="fa-solid fa-users-gear"></i>
+                            <span>User Directory</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div onclick="switchTab('create-staff-view')" id="nav-create-staff-view" class="nav-item">
+                            <i class="fa-solid fa-user-shield"></i>
+                            <span>Admin Roles</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div onclick="switchTab('products-view')" id="nav-products-view" class="nav-item">
+                            <i class="fa-solid fa-box"></i>
+                            <span>Products</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div onclick="switchTab('orders-view')" id="nav-orders-view" class="nav-item">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            <span>Orders</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div onclick="switchTab('queries-view')" id="nav-queries-view" class="nav-item">
+                            <i class="fa-solid fa-headset"></i>
+                            <span>Support Queries</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="user-profile">
+                <div class="profile-pic" id="user-initials">SA</div>
+                <div class="profile-info" style="flex-grow: 1;">
+                    <h4 id="user-display-name">Super Admin</h4>
+                    <p>System Administrator</p>
+                </div>
+                <div onclick="handleLogout()" style="cursor: pointer; color: var(--text-muted); font-size: 20px; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-danger)'" onmouseout="this.style.color='var(--text-muted)'" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            
+            <!-- 1. DASHBOARD PANEL VIEW -->
+            <div id="dashboard-view" class="panel-page active">
+                <div class="header-dashboard">
+                    <div>
+                        <h1 id="welcome-title">Overview</h1>
+                        <p>Hospital management dashboard metrics</p>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-left">
+                            <h3>Total Patients</h3>
+                            <p id="stat-patients">0</p>
+                        </div>
+                        <div class="stat-card-right">
+                            <i class="fa-solid fa-user-injured"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-left">
+                            <h3>Doctors</h3>
+                            <p id="stat-doctors">0</p>
+                        </div>
+                        <div class="stat-card-right">
+                            <i class="fa-solid fa-user-md"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-left">
+                            <h3>Distributors</h3>
+                            <p id="stat-distributors">0</p>
+                        </div>
+                        <div class="stat-card-right">
+                            <i class="fa-solid fa-truck"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-left">
+                            <h3>Admins / Staff</h3>
+                            <p id="stat-staff">0</p>
+                        </div>
+                        <div class="stat-card-right">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-body-grid">
+                    <!-- Chart Panel -->
+                    <div class="dashboard-panel">
+                        <h2><i class="fa-solid fa-chart-donut"></i> Role Distribution</h2>
+                        <div style="height: 300px; display: flex; justify-content: center; align-items: center;">
+                            <canvas id="rolesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Side Stats -->
+                    <div class="dashboard-panel" style="display: flex; flex-direction: column; justify-content: center;">
+                        <h2 style="margin-bottom: 10px;">Quick Health</h2>
+                        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Platform status Overview</p>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                                <span>Total System Orders</span>
+                                <strong id="stat-orders-total">0</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                                <span>Products Catalog</span>
+                                <strong id="stat-products">0</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding-bottom: 8px;">
+                                <span>Platform Revenue</span>
+                                <strong id="stat-revenue">₹0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. USERS MANAGEMENT VIEW -->
+            <div id="users-view" class="panel-page">
+                <div class="header-dashboard">
+                    <div>
+                        <h1>User Directory</h1>
+                        <p>Manage patients, doctors, distributors, and admin staff</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-panel" style="padding: 0; overflow: hidden;">
+                    <div class="filter-header" style="padding: 24px 32px; border-bottom: 1px solid var(--border-glass); margin-bottom: 0; background: rgba(255, 255, 255, 0.4);">
+                        <h2><i class="fa-solid fa-users"></i> Registered Users</h2>
+                        <div>
+                            <select id="role-filter" class="filter-select" onchange="fetchUsers()">
+                                <option value="">All Roles</option>
+                                <option value="super_admin">Super Admin</option>
+                                <option value="admin">Admin</option>
+                                <option value="sub_admin">Sub Admin</option>
+                                <option value="doctor">Doctor</option>
+                                <option value="patient">Patient</option>
+                                <option value="distributor">Distributor</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Phone</th>
+                                    <th>Gender / Age</th>
+                                    <th style="text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+              <!-- 3. CREATE STAFF VIEW -->
+            <div id="create-staff-view" class="panel-page">
+                <div class="header-dashboard">
+                    <div>
+                        <h1><i class="fa-solid fa-user-plus" style="color: var(--accent-primary); font-size: 24px;"></i> Add Admin / Sub Admin</h1>
+                        <p>Create new administrative accounts and assign granular access permissions</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-panel" style="max-width: 100%; padding: 28px 32px;">
+                    <form id="create-staff-form">
+
+                        <!-- Section 1: Basic Info -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="fa-solid fa-id-card"></i> Basic Information</div>
+                            <div class="staff-form-grid">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-user"></i><input type="text" id="staff-name" placeholder="John Doe" required></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Email Address</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-envelope"></i><input type="email" id="staff-email" placeholder="john@airsine.com" required></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-lock"></i><input type="password" id="staff-password" placeholder="Min 6 chars, 1 letter + 1 number" required></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Assign Role</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-user-tag" style="z-index:2;"></i>
+                                        <select id="staff-role" required>
+                                            <option value="admin">Admin</option>
+                                            <option value="sub_admin" selected>Sub Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-phone"></i><input type="tel" id="staff-phone" placeholder="9876543210" required></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Gender</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-venus-mars" style="z-index:2;"></i>
+                                        <select id="staff-gender" required>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Age</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-cake-candles"></i><input type="number" id="staff-age" placeholder="30" required min="18" max="100"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Date of Birth</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-calendar"></i><input type="date" id="staff-dob" required></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Location -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="fa-solid fa-location-dot"></i> Address & Location</div>
+                            <div class="staff-form-grid">
+                                <div class="form-group col-span-2">
+                                    <label>Home Address</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-house" style="top: 18px; transform: none;"></i><textarea id="staff-address" rows="2" placeholder="Street address, building, etc." required style="padding-left: 44px; resize: none; padding-top: 12px;"></textarea></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Area / Locality</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-map-location-dot"></i><input type="text" id="staff-area" placeholder="Locality / Area" required></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>District</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-city"></i><input type="text" id="staff-district" placeholder="District" required></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>State</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-map"></i><input type="text" id="staff-state" placeholder="State" required></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Pincode</label>
+                                    <div class="input-wrapper"><i class="fa-solid fa-map-pin"></i><input type="text" id="staff-pincode" placeholder="6-digit pincode" required pattern="\d{6}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Permissions -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="fa-solid fa-shield-halved"></i> Access Permissions</div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                                <div class="perm-module">
+                                    <h4><i class="fa-solid fa-gauge-high"></i> Dashboard</h4>
+                                    <div class="perm-checkbox-row">
+                                        <label class="perm-checkbox-label"><input type="checkbox" id="perm-dash-view" checked><span>View</span></label>
+                                    </div>
+                                </div>
+                                <div class="perm-module">
+                                    <h4><i class="fa-solid fa-users"></i> User Directory</h4>
+                                    <div class="perm-checkbox-row">
+                                        <label class="perm-checkbox-label"><input type="checkbox" id="perm-user-view" checked><span>View</span></label>
+                                        <label class="perm-checkbox-label"><input type="checkbox" id="perm-user-edit"><span>Edit</span></label>
+                                        <label class="perm-checkbox-label"><input type="checkbox" id="perm-user-delete"><span>Delete</span></label>
+                                    </div>
+                                </div>
+                                <div class="perm-module">
+                                    <h4><i class="fa-solid fa-user-plus"></i> Create Staff</h4>
+                                    <div class="perm-checkbox-row">
+                                        <label class="perm-checkbox-label"><input type="checkbox" id="perm-staff-view"><span>View / Create</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; margin-top: 4px;">
+                            <button type="submit" class="btn-submit" style="max-width: 220px;"><i class="fa-solid fa-check"></i> Create Account</button>
+                            <button type="reset" class="btn-submit" style="max-width: 140px; background: rgba(100,116,139,0.15); color: var(--text-muted); box-shadow: none;">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 4. PRODUCTS VIEW -->
+            <div id="products-view" class="panel-page">
+                <div class="header-dashboard">
+                    <div>
+                        <h1>Products Catalog</h1>
+                        <p>Manage products, pricing, and discounts</p>
+                    </div>
+                </div>
+                <div class="dashboard-panel" style="padding: 0; overflow: hidden;">
+                    <div class="filter-header" style="padding: 24px 32px; border-bottom: 1px solid var(--border-glass); margin-bottom: 0; background: rgba(255, 255, 255, 0.4);">
+                        <h3 style="margin: 0;">All Products</h3>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn-submit" style="margin-top: 0; padding: 10px 20px; font-size: 14px; border-radius: 12px;" onclick="document.getElementById('product-form-modal').style.display='flex'">+ Add Product</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Price/MRP</th>
+                                    <th>Customer Disc.</th>
+                                    <th>Distributor Disc.</th>
+                                    <th>Status</th>
+                                    <th style="text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body">
+                                <!-- Dynamic rows -->
+                                <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. ORDERS VIEW -->
+            <div id="orders-view" class="panel-page">
+                <div class="header-dashboard">
+                    <div>
+                        <h1>Orders</h1>
+                        <p>Track customer and distributor orders</p>
+                    </div>
+                </div>
+                <div class="dashboard-panel" style="padding: 0; overflow: hidden;">
+                    <div class="filter-header" style="padding: 24px 32px; border-bottom: 1px solid var(--border-glass); margin-bottom: 0; background: rgba(255, 255, 255, 0.4);">
+                        <h3 style="margin: 0;">Order History</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Final Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body">
+                                <!-- Dynamic rows -->
+                                <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. SUPPORT QUERIES VIEW -->
+            <div id="queries-view" class="panel-page">
+                <div class="header-dashboard">
+                    <div>
+                        <h1>Support Queries</h1>
+                        <p>Respond to user queries and issues</p>
+                    </div>
+                </div>
+                <div class="dashboard-panel" style="padding: 0; overflow: hidden;">
+                    <div class="filter-header" style="padding: 24px 32px; border-bottom: 1px solid var(--border-glass); margin-bottom: 0; background: rgba(255, 255, 255, 0.4);">
+                        <h3 style="margin: 0;">Active Queries</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Subject</th>
+                                    <th>Message</th>
+                                    <th>Status</th>
+                                    <th style="text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="queries-table-body">
+                                <!-- Dynamic rows -->
+                                <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================= PANEL JAVASCRIPT ================= -->
+    <script>
+        let rolesChart = null;
+
+        // Toast Helper
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-msg');
+
+            msg.textContent = message;
+            toast.className = `toast show ${type}`;
+            
+            if (type === 'success') {
+                icon.className = "fa-solid fa-circle-check";
+            } else {
+                icon.className = "fa-solid fa-triangle-exclamation";
+            }
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Loader helper
+        function toggleLoader(show) {
+            document.getElementById('loader').style.display = show ? 'flex' : 'none';
+        }
+
+        // Check login on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('admin_token');
+            if (token) {
+                // Backfill admin_role from JWT payload if missing (old sessions)
+                if (!localStorage.getItem('admin_role')) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        if (payload.role) localStorage.setItem('admin_role', payload.role);
+                    } catch(e) {}
+                }
+                showDashboard();
+            } else {
+                showLoginPage();
+            }
+        });
+
+        // Switch Pages
+        function showLoginPage() {
+            document.getElementById('auth-page').style.display = 'flex';
+            document.getElementById('dashboard-page').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('dashboard-page').style.display = 'grid';
+            
+            // Set user profile initials and display name
+            const userJson = localStorage.getItem('admin_user');
+            if (userJson) {
+                const user = JSON.parse(userJson);
+                document.getElementById('user-display-name').textContent = user.name || 'Admin';
+                document.getElementById('user-initials').textContent = (user.name || 'AD').split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+            }
+
+            applyPermissionNav();
+            refreshDashboardData();
+        }
+
+        // =========================================================
+        //  ROLE-BASED ACCESS CONTROL (RBAC) NAVIGATION
+        // =========================================================
+        function getPermissions() {
+            const role = localStorage.getItem('admin_role');
+            if (role === 'super_admin') {
+                // Super admin has all permissions
+                return {
+                    dashboard: ['view'],
+                    users: ['view', 'edit', 'delete'],
+                    staff: ['view'],
+                    products: ['view'],
+                    orders: ['view'],
+                    queries: ['view']
+                };
+            }
+            // For admin/sub_admin, parse stored permissions JSON
+            const userJson = localStorage.getItem('admin_user');
+            if (userJson) {
+                const user = JSON.parse(userJson);
+                if (user.permissions) {
+                    try { return JSON.parse(user.permissions); } catch(e) {}
+                }
+            }
+            return {}; // No permissions by default
+        }
+
+        function hasPermission(module, action) {
+            const perms = getPermissions();
+            return perms[module] && perms[module].includes(action);
+        }
+
+        function applyPermissionNav() {
+            const role = localStorage.getItem('admin_role');
+
+            // Show/hide nav items based on view permission
+            const navDash = document.getElementById('nav-dashboard-view');
+            const navUsers = document.getElementById('nav-users-view');
+            const navStaff = document.getElementById('nav-create-staff-view');
+            const navProducts = document.getElementById('nav-products-view');
+            const navOrders = document.getElementById('nav-orders-view');
+            const navQueries = document.getElementById('nav-queries-view');
+
+            if (navDash) navDash.style.display = hasPermission('dashboard', 'view') ? 'flex' : 'none';
+            if (navUsers) navUsers.style.display = hasPermission('users', 'view') ? 'flex' : 'none';
+            if (navStaff) navStaff.style.display = hasPermission('staff', 'view') ? 'flex' : 'none';
+            if (navProducts) navProducts.style.display = hasPermission('products', 'view') ? 'flex' : 'none';
+            if (navOrders) navOrders.style.display = hasPermission('orders', 'view') ? 'flex' : 'none';
+            if (navQueries) navQueries.style.display = hasPermission('queries', 'view') ? 'flex' : 'none';
+
+            // Check if there is a path to navigate to, otherwise default to first accessible tab
+            routeFromPath();
+
+            if (!document.querySelector('.panel-page.active')) {
+                // Navigate to the first accessible tab
+                if (hasPermission('dashboard', 'view')) {
+                    switchTab('dashboard-view');
+                } else if (hasPermission('users', 'view')) {
+                    switchTab('users-view');
+                } else if (hasPermission('staff', 'view')) {
+                    switchTab('create-staff-view');
+                } else if (hasPermission('products', 'view')) {
+                    switchTab('products-view');
+                } else if (hasPermission('orders', 'view')) {
+                    switchTab('orders-view');
+                } else if (hasPermission('queries', 'view')) {
+                    switchTab('queries-view');
+                }
+            }
+        }
+
+        // Handle Login Submission
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            toggleLoader(true);
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                toggleLoader(false);
+
+                if (!response.ok) {
+                    const errMsg = (data.error && data.error.message) || data.detail || 'Authentication failed';
+                    throw new Error(errMsg);
+                }
+
+                const allowedRoles = ['super_admin', 'admin', 'sub_admin'];
+                if (!allowedRoles.includes(data.role)) {
+                    throw new Error('Access Denied. Only Admin users can access this panel.');
+                }
+
+                localStorage.setItem('admin_token', data.access_token);
+                localStorage.setItem('admin_user', JSON.stringify(data.user));
+                localStorage.setItem('admin_role', data.role);
+
+                const greeting = data.role === 'super_admin' ? 'Welcome back, Super Admin!' : `Welcome back, ${data.user.name}!`;
+                showToast(greeting);
+                showDashboard();
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        });
+
+        // =========================================================
+        //  PATH-BASED URL ROUTING
+        //  Each page has its own URL: /dashboard | /users | /create-staff
+        // =========================================================
+        const ROUTE_MAP = {
+            '/dashboard':       'dashboard-view',
+            '/users':           'users-view',
+            '/create-staff':    'create-staff-view',
+            '/admin-dashboard': 'dashboard-view',
+            '/products-admin':  'products-view',
+            '/orders-admin':    'orders-view',
+            '/queries-admin':   'queries-view',
+        };
+        const PATH_MAP = {
+            'dashboard-view':    '/dashboard',
+            'users-view':        '/users',
+            'create-staff-view': '/create-staff',
+            'products-view':     '/products-admin',
+            'orders-view':       '/orders-admin',
+            'queries-view':      '/queries-admin',
+        };
+
+        // Tab Navigation (also updates URL hash)
+        function switchTab(tabId) {
+            document.querySelectorAll('.panel-page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            const el = document.getElementById(tabId);
+            const nav = document.getElementById(`nav-${tabId}`);
+            if (el) el.classList.add('active');
+            if (nav) nav.classList.add('active');
+
+            // Update URL path without scrolling
+            const path = PATH_MAP[tabId];
+            if (path && window.location.pathname !== path) {
+                history.pushState(null, '', path);
+            }
+
+            if (tabId === 'dashboard-view')    refreshDashboardData();
+            else if (tabId === 'users-view')   fetchUsers();
+            else if (tabId === 'products-view') fetchProducts();
+            else if (tabId === 'orders-view') fetchOrders();
+            else if (tabId === 'queries-view') fetchQueries();
+        }
+
+        // Navigate to the tab based on current URL path
+        function routeFromPath() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return; // not logged in, ignore
+            const tabId = ROUTE_MAP[window.location.pathname] || null;
+            if (tabId) {
+                // Only switch if user has permission
+                const moduleMap = {
+                    'dashboard-view':   ['dashboard', 'view'],
+                    'users-view':       ['users', 'view'],
+                    'create-staff-view':['staff', 'view'],
+                    'products-view':    ['products', 'view'],
+                    'orders-view':      ['orders', 'view'],
+                    'queries-view':     ['queries', 'view'],
+                };
+                const [mod, action] = moduleMap[tabId] || [];
+                if (mod && hasPermission(mod, action)) {
+                    switchTab(tabId);
+                    return;
+                }
+            }
+        }
+
+        // Listen for browser back/forward
+        window.addEventListener('popstate', () => {
+            routeFromPath();
+        });
+
+
+        // Refresh Stats & Dashboard
+        async function refreshDashboardData() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            toggleLoader(true);
+            try {
+                const response = await fetch('/admin/dashboard', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                toggleLoader(false);
+
+                if (!response.ok) throw new Error(data.detail || 'Failed to fetch dashboard data');
+
+                // Render metrics
+                document.getElementById('stat-patients').textContent = data.users.total_patients;
+                document.getElementById('stat-doctors').textContent = data.users.total_doctors;
+                document.getElementById('stat-distributors').textContent = data.users.total_distributors;
+                
+                // Admin + sub admin count
+                const staffCount = (data.users.total_admins || 0) + (data.users.total_sub_admins || 0);
+                document.getElementById('stat-staff').textContent = staffCount;
+
+                // Extra details
+                document.getElementById('stat-orders-total').textContent = data.orders.total_orders;
+                document.getElementById('stat-products').textContent = data.products.total_products;
+                document.getElementById('stat-revenue').textContent = `₹${data.revenue.total_revenue.toLocaleString('en-IN')}`;
+
+                // Setup Chart
+                setupChart(data.users);
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        }
+
+        // Role Distribution Chart
+        function setupChart(userStats) {
+            const ctx = document.getElementById('rolesChart').getContext('2d');
+            
+            if (rolesChart) {
+                rolesChart.destroy();
+            }
+
+            rolesChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Patients', 'Doctors', 'Distributors', 'Admins', 'Sub Admins'],
+                    datasets: [{
+                        data: [
+                            userStats.total_patients, 
+                            userStats.total_doctors, 
+                            userStats.total_distributors, 
+                            userStats.total_admins || 0,
+                            userStats.total_sub_admins
+                        ],
+                        backgroundColor: [
+                            '#06b6d4', // Patients (Cyan)
+                            '#f59e0b', // Doctors (Yellow)
+                            '#ec4899', // Distributors (Pink)
+                            '#6366f1', // Admins (Indigo)
+                            '#10b981'  // Sub Admins (Green)
+                        ],
+                        borderWidth: 1,
+                        borderColor: 'rgba(255, 255, 255, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { family: 'Outfit', size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fetch All Users
+        async function fetchUsers() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            const roleFilter = document.getElementById('role-filter').value;
+            let url = '/admin/users';
+            if (roleFilter) {
+                url += `?role=${roleFilter}`;
+            }
+
+            toggleLoader(true);
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                toggleLoader(false);
+
+                if (!response.ok) throw new Error(data.detail || 'Failed to fetch users list');
+
+                const tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = '';
+
+                const canDelete = hasPermission('users', 'delete');
+                const canEdit = hasPermission('users', 'edit');
+
+                data.forEach(user => {
+                    const row = document.createElement('tr');
+
+                    let actionButtons = '';
+                    
+                    actionButtons += `<button class="btn-action btn-view" onclick="viewUser(${user.id})" title="View User" style="color: var(--accent-primary);"><i class="fa-solid fa-eye"></i></button>`;
+
+                    if (user.role !== 'super_admin') {
+                        if (canEdit) {
+                            actionButtons += `<button class="btn-action btn-edit" onclick="editUser(${user.id})" title="Edit User"><i class="fa-solid fa-pen-to-square"></i></button>`;
+                        }
+                        if (canDelete) {
+                            actionButtons += `<button class="btn-action" onclick="deleteUser(${user.id}, '${user.name}')" title="Delete User"><i class="fa-solid fa-trash-can"></i></button>`;
+                        }
+                    }
+                    if (!actionButtons) {
+                        actionButtons = `<span style="color: var(--text-muted); font-size: 12px;">N/A</span>`;
+                    }
+
+                    row.innerHTML = `
+                        <td>${user.id}</td>
+                        <td style="font-weight: 500;">${user.name}</td>
+                        <td>${user.email}</td>
+                        <td><span class="badge ${user.role}">${user.role.replace('_', ' ')}</span></td>
+                        <td>${user.phone || 'N/A'}</td>
+                        <td>${user.gender || 'N/A'} (${user.age || 'N/A'})</td>
+                        <td style="text-align: center;">${actionButtons}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        }
+
+        // Delete User
+        async function deleteUser(userId, userName) {
+            if (!confirm(`Are you sure you want to delete user "${userName}"?`)) return;
+
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            toggleLoader(true);
+            try {
+                const response = await fetch(`/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                toggleLoader(false);
+
+                if (!response.ok) throw new Error(data.detail || 'Failed to delete user');
+
+                showToast(`User "${userName}" has been deleted`);
+                fetchUsers();
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        }
+
+        // Create Admin/Sub Admin Staff Account
+        document.getElementById('create-staff-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            // Collect permissions from checkboxes
+            const permissionsObj = {
+                dashboard: [],
+                users: [],
+                staff: []
+            };
+            if (document.getElementById('perm-dash-view').checked)   permissionsObj.dashboard.push('view');
+            if (document.getElementById('perm-user-view').checked)   permissionsObj.users.push('view');
+            if (document.getElementById('perm-user-edit').checked)   permissionsObj.users.push('edit');
+            if (document.getElementById('perm-user-delete').checked) permissionsObj.users.push('delete');
+            if (document.getElementById('perm-staff-view').checked)  permissionsObj.staff.push('view');
+
+            const staffPayload = {
+                name: document.getElementById('staff-name').value,
+                email: document.getElementById('staff-email').value,
+                password: document.getElementById('staff-password').value,
+                role: document.getElementById('staff-role').value,
+                phone: document.getElementById('staff-phone').value,
+                gender: document.getElementById('staff-gender').value,
+                age: document.getElementById('staff-age').value,
+                dob: document.getElementById('staff-dob').value,
+                homeAddress: document.getElementById('staff-address').value,
+                area: document.getElementById('staff-area').value,
+                district: document.getElementById('staff-district').value,
+                state: document.getElementById('staff-state').value,
+                pincode: document.getElementById('staff-pincode').value,
+                permissions: JSON.stringify(permissionsObj)
+            };
+
+            toggleLoader(true);
+            try {
+                const response = await fetch('/admin/create-staff', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(staffPayload)
+                });
+
+                const data = await response.json();
+                toggleLoader(false);
+
+                if (!response.ok) throw new Error(data.detail || 'Failed to create staff member');
+
+                showToast(`Staff account for "${staffPayload.name}" successfully created!`);
+                document.getElementById('create-staff-form').reset();
+                switchTab('users-view');
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        });
+
+
+
+        // Fetch Products
+        async function fetchProducts() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            const tbody = document.getElementById('products-table-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading products...</td></tr>';
+            
+            try {
+                const response = await fetch('/admin/products', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch products');
+                
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No products found</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = '';
+                data.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>#${p.id}</td>
+                        <td style="font-weight: 600;">${p.product_name}</td>
+                        <td>₹${p.unit_price} / <span style="text-decoration: line-through; color: var(--text-muted); font-size: 12px;">₹${p.unit_mrp}</span></td>
+                        <td><span class="badge" style="background: rgba(34,197,94,0.1); color: var(--accent-success);">${p.customer_discount}%</span></td>
+                        <td><span class="badge" style="background: rgba(234,179,8,0.1); color: var(--accent-warning);">${p.distributor_discount}%</span></td>
+                        <td><span class="badge" style="background: ${p.is_available ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${p.is_available ? 'var(--accent-success)' : 'var(--accent-danger)'};">${p.is_available ? 'Active' : 'Inactive'}</span></td>
+                        <td style="text-align: center;">
+                            <div class="action-btn" title="Edit Product"><i class="fa-solid fa-pen"></i></div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--accent-danger); padding: 20px;">${err.message}</td></tr>`;
+            }
+        }
+
+        // Fetch Orders
+        async function fetchOrders() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            const tbody = document.getElementById('orders-table-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading orders...</td></tr>';
+            
+            try {
+                const response = await fetch('/admin/orders', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch orders');
+                
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No orders found</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = '';
+                data.forEach(o => {
+                    const tr = document.createElement('tr');
+                    
+                    let statusBadge = '';
+                    if (o.status === 'PENDING') statusBadge = '<span class="badge" style="background: rgba(234,179,8,0.1); color: var(--accent-warning);">Pending</span>';
+                    else if (o.status === 'APPROVED') statusBadge = '<span class="badge" style="background: rgba(59,130,246,0.1); color: #3b82f6;">Approved</span>';
+                    else statusBadge = '<span class="badge" style="background: rgba(34,197,94,0.1); color: var(--accent-success);">Delivered</span>';
+
+                    tr.innerHTML = `
+                        <td>#${o.id}</td>
+                        <td style="font-weight: 600;">${o.customer_name}</td>
+                        <td>${o.product_name}</td>
+                        <td>${o.quantity}</td>
+                        <td style="font-weight: 600; color: var(--accent-primary);">₹${o.final_amount}</td>
+                        <td style="color: var(--text-muted); font-size: 13px;">${new Date(o.order_date).toLocaleDateString()}</td>
+                        <td>${statusBadge}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--accent-danger); padding: 20px;">${err.message}</td></tr>`;
+            }
+        }
+
+        // Fetch Queries
+        async function fetchQueries() {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            const tbody = document.getElementById('queries-table-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading queries...</td></tr>';
+            
+            try {
+                const response = await fetch('/support/admin/queries', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch queries');
+                
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No queries found</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = '';
+                data.forEach(q => {
+                    const tr = document.createElement('tr');
+                    
+                    const isResolved = q.status === 'resolved';
+                    const statusBadge = isResolved 
+                        ? '<span class="badge" style="background: rgba(34,197,94,0.1); color: var(--accent-success);">Resolved</span>' 
+                        : '<span class="badge" style="background: rgba(239,68,68,0.1); color: var(--accent-danger);">Pending</span>';
+
+                    const actionBtn = isResolved 
+                        ? `<div class="action-btn" title="Resolved" style="opacity: 0.5; cursor: not-allowed;"><i class="fa-solid fa-check-double"></i></div>`
+                        : `<div class="action-btn" title="Mark as Resolved" onclick="resolveQuery(${q.id})" style="color: var(--accent-success);"><i class="fa-solid fa-check"></i></div>`;
+
+                    tr.innerHTML = `
+                        <td>#${q.id}</td>
+                        <td style="font-weight: 600;">${q.user_name}<br><span style="font-size:12px; font-weight: normal; color: var(--text-muted);">${q.user_email}</span></td>
+                        <td><span class="badge">${q.user_role}</span></td>
+                        <td>${q.query_type}</td>
+                        <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${q.message}">${q.message}</td>
+                        <td>${statusBadge}</td>
+                        <td style="text-align: center; display: flex; justify-content: center; gap: 8px;">
+                            ${actionBtn}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--accent-danger); padding: 20px;">${err.message}</td></tr>`;
+            }
+        }
+
+        async function resolveQuery(queryId) {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+            
+            if(!confirm("Mark this query as resolved?")) return;
+
+            toggleLoader(true);
+            try {
+                const response = await fetch(`/support/admin/queries/${queryId}/resolve`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                toggleLoader(false);
+                if (!response.ok) throw new Error('Failed to resolve query');
+                
+                showToast('Query marked as resolved!', 'success');
+                fetchQueries();
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            history.pushState(null, '', '/users');
+        }
+
+        async function viewUser(userId) {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            toggleLoader(true);
+            try {
+                const response = await fetch(`/admin/users/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                toggleLoader(false);
+                if (!response.ok) throw new Error('Failed to fetch user data');
+                
+                const user = await response.json();
+                
+                const contentDiv = document.getElementById('view-user-content');
+                contentDiv.innerHTML = `
+                    <div style="grid-column: span 2; display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--accent-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+                            ${user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 20px;">${user.name}</h3>
+                            <span class="badge ${user.role}" style="margin-top: 4px; display: inline-block;">${user.role.replace('_', ' ').toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div><strong>Email:</strong> ${user.email}</div>
+                    <div><strong>Phone:</strong> ${user.phone || 'N/A'}</div>
+                    <div><strong>Age:</strong> ${user.age || 'N/A'}</div>
+                    <div><strong>Gender:</strong> ${user.gender || 'N/A'}</div>
+                    <div style="grid-column: span 2;"><strong>Address:</strong> ${user.homeAddress || 'N/A'}</div>
+                    
+                    ${user.role === 'doctor' ? `
+                        <div style="grid-column: span 2; margin-top: 10px;"><strong>Professional Details</strong></div>
+                        <div><strong>Hospital:</strong> ${user.hospital || 'N/A'}</div>
+                        <div><strong>Specialisation:</strong> ${user.specialisation || 'N/A'}</div>
+                        <div><strong>Qualification:</strong> ${user.qualification || 'N/A'}</div>
+                        <div><strong>Experience:</strong> ${user.experience ? user.experience + ' Years' : 'N/A'}</div>
+                        <div><strong>License Number:</strong> ${user.licenseNumber || 'N/A'}</div>
+                    ` : ''}
+                    
+                    ${user.role === 'distributor' ? `
+                        <div style="grid-column: span 2; margin-top: 10px;"><strong>Business Details</strong></div>
+                        <div><strong>Company Name:</strong> ${user.companyName || 'N/A'}</div>
+                        <div><strong>Business Type:</strong> ${user.businessType || 'N/A'}</div>
+                        <div><strong>Distributor Type:</strong> ${user.distributorType || 'N/A'}</div>
+                        <div><strong>License Number:</strong> ${user.licenseNumber || 'N/A'}</div>
+                    ` : ''}
+                `;
+
+                document.getElementById('view-user-modal').style.display = 'flex';
+                history.pushState(null, '', `/admin/users/${userId}/view`);
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        }
+
+        // Edit User implementation
+        async function editUser(userId) {
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            toggleLoader(true);
+            try {
+                const response = await fetch(`/admin/users/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                toggleLoader(false);
+                if (!response.ok) throw new Error('Failed to fetch user data');
+                
+                const user = await response.json();
+                
+                document.getElementById('edit-user-id').value = user.id;
+                document.getElementById('edit-name').value = user.name || '';
+                document.getElementById('edit-email').value = user.email || '';
+                document.getElementById('edit-phone').value = user.phone || '';
+                document.getElementById('edit-role').value = user.role || 'patient';
+                document.getElementById('edit-age').value = user.age || '';
+                document.getElementById('edit-gender').value = user.gender || 'Male';
+                document.getElementById('edit-address').value = user.homeAddress || '';
+                
+                document.getElementById('edit-hospital').value = user.hospital || '';
+                document.getElementById('edit-specialisation').value = user.specialisation || '';
+                document.getElementById('edit-company-name').value = user.companyName || '';
+                document.getElementById('edit-license-number').value = user.licenseNumber || '';
+
+                document.getElementById('edit-user-modal').style.display = 'flex';
+                history.pushState(null, '', `/admin/users/${userId}/edit`);
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        }
+
+        document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('admin_token');
+            if (!token) return;
+
+            const userId = document.getElementById('edit-user-id').value;
+            const updatePayload = {
+                name: document.getElementById('edit-name').value,
+                email: document.getElementById('edit-email').value,
+                phone: document.getElementById('edit-phone').value,
+                age: parseInt(document.getElementById('edit-age').value) || null,
+                gender: document.getElementById('edit-gender').value,
+                homeAddress: document.getElementById('edit-address').value,
+                hospital: document.getElementById('edit-hospital').value,
+                specialisation: document.getElementById('edit-specialisation').value,
+                companyName: document.getElementById('edit-company-name').value,
+                licenseNumber: document.getElementById('edit-license-number').value
+            };
+
+            toggleLoader(true);
+            try {
+                const response = await fetch(`/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updatePayload)
+                });
+
+                toggleLoader(false);
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Failed to update user');
+                }
+
+                showToast('User updated successfully', 'success');
+                closeModal('edit-user-modal');
+                fetchUsers();
+            } catch (err) {
+                toggleLoader(false);
+                showToast(err.message, 'error');
+            }
+        });
+
+        // Logout
+        function handleLogout() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            localStorage.removeItem('admin_role');
+            showToast('Logged out successfully');
+            showLoginPage();
+        }
+    </script>
+</body>
+</html>

@@ -28,6 +28,7 @@ class User(Base):
     distributor_type = Column(String, nullable=True)
     license_number = Column(String, nullable=True)
     referral_code = Column(String, unique=True, nullable=True)
+    permissions = Column(Text, nullable=True)
 
 class Product(Base):
     __tablename__ = "products"
@@ -36,13 +37,24 @@ class Product(Base):
     product_type = Column(String)
     unit_price = Column(Float)
     unit_mrp = Column(Float)
-    discount = Column(Float)
+    discount = Column(Float, default=0.0) # Legacy or base
+    customer_discount = Column(Float, default=0.0) # For patients/doctors
+    distributor_discount = Column(Float, default=0.0) # For distributors
     currency = Column(String, default="INR")
     description = Column(Text, nullable=True)
     is_available = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     product_image = Column(String, nullable=True)
     distributor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+class SupportQuery(Base):
+    __tablename__ = "support_queries"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    query_type = Column(String) # e.g. 'general', 'order'
+    message = Column(Text)
+    status = Column(String, default="pending") # 'pending', 'resolved'
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 class Order(Base):
     __tablename__ = "orders"
@@ -123,4 +135,5 @@ class PdfReportData(Base):
     patient_details = Column(Text, nullable=True) # JSON string of patient form details
     total_days = Column(Integer, nullable=True)
     clinical_logs = Column(Text, nullable=True) # JSON string of full logs array
+    pdf_base64 = Column(Text, nullable=True) # The actual base64 of the generated PDF
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.orm import Session
 from database import SessionLocal
 import models
-from schemas import UserCreate, UserResponse
+from schemas import UserCreate, UserResponse, UserUpdate
 from auth import hash_password, create_token
-from validators import validate_email, validate_password, validate_phone, validate_pincode, validate_age, validate_role
+from validators import validate_email, validate_password, validate_phone, validate_pincode, validate_age, validate_role, to_numeric_or_string
 from exception import ConflictException, AuthorizationException, NotFoundException, DatabaseException
 from typing import Optional
 
@@ -26,15 +26,15 @@ def get_db():
 def check_admin_permission(request: Request, required_role: str = "sub_admin"):
     """
     Check if user has admin permissions
-    required_role: 'sub_admin' or 'super_admin'
+    required_role: 'sub_admin', 'admin', or 'super_admin'
     """
     current_user = request.state.user
     
     if required_role == "super_admin":
         if current_user["role"] != "super_admin":
             raise AuthorizationException("Only Super Admin can perform this action")
-    else:  # sub_admin or super_admin allowed
-        if current_user["role"] not in ["sub_admin", "super_admin"]:
+    else:  # admin, sub_admin or super_admin allowed
+        if current_user["role"] not in ["admin", "sub_admin", "super_admin"]:
             raise AuthorizationException("Admin access required")
     
     return current_user
@@ -134,6 +134,7 @@ def create_sub_admin(user: UserCreate, request: Request, db: Session = Depends(g
         district=user.district,
         state=user.state,
         pincode=validated_pincode,
+        permissions=user.permissions,
     )
     
     try:
@@ -145,6 +146,56 @@ def create_sub_admin(user: UserCreate, request: Request, db: Session = Depends(g
         db.rollback()
         raise DatabaseException(f"Failed to create sub admin: {str(e)}")
 
+# CREATE STAFF (Admin or Sub Admin - Only Super Admin can do this)
+@router.post("/create-staff", response_model=UserResponse)
+def create_staff(user: UserCreate, request: Request, db: Session = Depends(get_db)):
+    """
+    Create a staff member (Admin or Sub Admin) - Only Super Admin can do this
+    """
+    # Check permission
+    check_admin_permission(request, required_role="super_admin")
+    
+    # Validate role - only admin or sub_admin allowed for staff creation
+    validated_role = validate_role(user.role)
+    if validated_role not in ["admin", "sub_admin"]:
+        raise HTTPException(status_code=400, detail="Invalid staff role. Must be 'admin' or 'sub_admin'")
+        
+    # Validate email
+    validated_email = validate_email(user.email)
+    if db.query(models.User).filter(models.User.email == validated_email).first():
+        raise ConflictException("Email already registered")
+    
+    validated_password = validate_password(user.password)
+    validated_phone = validate_phone(user.phone)
+    validated_age = validate_age(user.age)
+    validated_pincode = validate_pincode(user.pincode)
+    
+    # Create staff
+    new_staff = models.User(
+        name=user.name.strip(),
+        email=validated_email,
+        password=hash_password(validated_password),
+        role=validated_role,
+        phone=validated_phone,
+        gender=user.gender,
+        age=validated_age,
+        dob=user.dob,
+        home_address=user.homeAddress,
+        area=user.area,
+        district=user.district,
+        state=user.state,
+        pincode=validated_pincode,
+        permissions=user.permissions,
+    )
+    
+    try:
+        db.add(new_staff)
+        db.commit()
+        db.refresh(new_staff)
+        return new_staff
+    except Exception as e:
+        db.rollback()
+        raise DatabaseException(f"Failed to create staff member: {str(e)}")
 # ADMIN DASHBOARD
 @router.get("/dashboard")
 def admin_dashboard(request: Request, db: Session = Depends(get_db)):
@@ -239,13 +290,9 @@ def get_all_users(
     role: Optional[str] = Query(None, description="Filter by role"),
     db: Session = Depends(get_db)
 ):
-    """
-    Get all users (with optional role filter)
-    """
     check_admin_permission(request, required_role="sub_admin")
     
     query = db.query(models.User)
-    
     if role:
         query = query.filter(models.User.role == role)
     
@@ -256,10 +303,114 @@ def get_all_users(
         "name": u.name,
         "email": u.email,
         "role": u.role,
-        "phone": u.phone,
+        "phone": to_numeric_or_string(u.phone),
         "gender": u.gender,
-        "age": u.age,
+        "age": to_numeric_or_string(u.age),
     } for u in users]
+
+# GET ALL ORDERS (Admin view)
+@router.get("/orders")
+def get_all_orders(request: Request, db: Session = Depends(get_db)):
+    check_admin_permission(request, required_role="sub_admin")
+    orders = db.query(models.Order).order_by(models.Order.order_date.desc()).all()
+    result = []
+    for o in orders:
+        product = db.query(models.Product).filter(models.Product.id == o.product_id).first()
+        result.append({
+            "id": o.id,
+            "customer_name": o.customer_name,
+            "product_name": product.product_name if product else "Unknown",
+            "quantity": o.quantity,
+            "final_amount": o.final_amount,
+            "status": "PENDING" if o.status == 0 else "APPROVED" if o.status == 1 else "DELIVERED",
+            "order_date": o.order_date
+        })
+    return result
+
+# GET ALL PRODUCTS (Admin view)
+@router.get("/products")
+def get_all_products(request: Request, db: Session = Depends(get_db)):
+    check_admin_permission(request, required_role="sub_admin")
+    products = db.query(models.Product).order_by(models.Product.created_at.desc()).all()
+    result = []
+    for p in products:
+        result.append({
+            "id": p.id,
+            "product_name": p.product_name,
+            "unit_price": p.unit_price,
+            "unit_mrp": p.unit_mrp,
+            "customer_discount": p.customer_discount,
+            "distributor_discount": p.distributor_discount,
+            "is_available": p.is_available
+        })
+    return result
+
+# GET SINGLE USER
+@router.get("/users/{user_id}")
+def get_user(user_id: int, request: Request, db: Session = Depends(get_db)):
+    check_admin_permission(request, required_role="sub_admin")
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise NotFoundException("User not found")
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role,
+        "phone": to_numeric_or_string(user.phone),
+        "gender": user.gender,
+        "age": to_numeric_or_string(user.age),
+        "dob": user.dob,
+        "homeAddress": user.home_address,
+        "area": user.area,
+        "district": user.district,
+        "state": user.state,
+        "pincode": to_numeric_or_string(user.pincode),
+        "hospital": user.hospital,
+        "specialisation": user.specialisation,
+        "qualification": user.qualification,
+        "experience": user.experience,
+        "companyName": user.company_name,
+        "businessType": user.business_type,
+        "distributorType": user.distributor_type,
+        "licenseNumber": user.license_number,
+        "permissions": user.permissions
+    }
+
+# UPDATE SINGLE USER
+@router.put("/users/{user_id}")
+def update_user(user_id: int, update_data: UserUpdate, request: Request, db: Session = Depends(get_db)):
+    check_admin_permission(request, required_role="admin")
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise NotFoundException("User not found")
+
+    if user.role == "super_admin":
+        # Only super_admin can edit another super_admin (or themselves)
+        check_admin_permission(request, required_role="super_admin")
+
+    update_dict = update_data.dict(exclude_unset=True)
+    
+    # Map frontend keys to DB columns if they differ
+    mapping = {
+        "homeAddress": "home_address",
+        "companyName": "company_name",
+        "businessType": "business_type",
+        "distributorType": "distributor_type",
+        "licenseNumber": "license_number"
+    }
+
+    for key, value in update_dict.items():
+        db_key = mapping.get(key, key)
+        setattr(user, db_key, value)
+
+    try:
+        db.commit()
+        db.refresh(user)
+        return {"message": "User updated successfully"}
+    except Exception as e:
+        db.rollback()
+        raise DatabaseException(f"Failed to update user: {str(e)}")
 
 # DELETE USER (Only Super Admin)
 @router.delete("/users/{user_id}")

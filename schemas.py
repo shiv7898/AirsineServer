@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 from datetime import datetime
 
 class UserCreate(BaseModel):
@@ -7,24 +7,47 @@ class UserCreate(BaseModel):
     email: str
     password: str
     role: str
-    phone: str
+    phone: Union[int, str]
     gender: str
-    age: int
+    age: Union[int, str]
     dob: str
     homeAddress: str
     area: str
     district: str
     state: str
-    pincode: str
+    pincode: Union[int, str]
     hospital: Optional[str] = None
     specialisation: Optional[str] = None
     qualification: Optional[str] = None
-    experience: Optional[str] = None
+    experience: Optional[Union[int, float, str]] = None
     companyName: Optional[str] = None
     businessType: Optional[str] = None
     distributorType: Optional[str] = None
-    licenseNumber: Optional[str] = None
+    licenseNumber: Optional[Union[int, float, str]] = None
+    permissions: Optional[str] = None
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    phone: Optional[Union[int, str]] = None
+    gender: Optional[str] = None
+    age: Optional[Union[int, str]] = None
+    dob: Optional[str] = None
+    homeAddress: Optional[str] = None
+    area: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[Union[int, str]] = None
+    hospital: Optional[str] = None
+    specialisation: Optional[str] = None
+    qualification: Optional[str] = None
+    experience: Optional[Union[int, float, str]] = None
+    companyName: Optional[str] = None
+    businessType: Optional[str] = None
+    distributorType: Optional[str] = None
+    licenseNumber: Optional[Union[int, float, str]] = None
+    permissions: Optional[str] = None
 class UserLogin(BaseModel):
     email: str
     password: str
@@ -34,7 +57,8 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: str
-    phone: str
+    phone: Union[int, str]
+    permissions: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -43,7 +67,9 @@ class ProductCreate(BaseModel):
     product_type: str
     unit_price: float
     unit_mrp: float
-    discount: float
+    discount: float = 0.0
+    customer_discount: float = 0.0
+    distributor_discount: float = 0.0
     description: Optional[str] = None
 
 class ProductResponse(BaseModel):
@@ -53,6 +79,8 @@ class ProductResponse(BaseModel):
     unit_price: float
     unit_mrp: float
     discount: float
+    customer_discount: float
+    distributor_discount: float
     currency: str
     is_available: bool
     product_image: Optional[str] = None
@@ -64,12 +92,12 @@ class OrderCreate(BaseModel):
     quantity: int
     referral_code: Optional[str] = None
     customer_name: str
-    customer_phone: str
+    customer_phone: int
     building: str
     locality: str
     district: str
     state: str
-    pincode: str
+    pincode: int
 
 class OrderResponse(BaseModel):
     id: int
@@ -109,3 +137,14 @@ class MachineSettingsCreate(BaseModel):
 class SupportQueryCreate(BaseModel):
     category: str
     message: str
+
+class SupportQueryResponse(BaseModel):
+    id: int
+    user_id: int
+    query_type: str
+    message: str
+    status: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
