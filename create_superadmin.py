@@ -1,19 +1,19 @@
 import sys
 from sqlalchemy.orm import Session
 from database import SessionLocal
-import models
-from auth import hash_password
+import app.models as models
+from app.core.auth import hash_password
 
 def create_superadmin(name, email, password, phone):
     db = SessionLocal()
     try:
         # Check if any super admin already exists
-        existing = db.query(models.User).filter(models.User.role == "super_admin").first()
+        existing = db.query(models.SuperAdmin).filter(models.SuperAdmin.role == "super_admin").first()
         if existing:
             print("Error: A Super Admin already exists in the system!")
             return
 
-        new_admin = models.User(
+        new_admin = models.SuperAdmin(
             name=name.strip(),
             email=email.lower().strip(),
             password=hash_password(password),

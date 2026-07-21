@@ -1,0 +1,114 @@
+<div id="edit-product-view" class="panel-page">
+                <div class="header-dashboard" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h3>Edit Product</h3>
+                        <p>Update inventory product details, pricing, and discounts</p>
+                    </div>
+                    <button type="button" onclick="switchTab('products-view')" style="display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid var(--border-glass); padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-primary); transition: all 0.2s; box-shadow: var(--shadow-soft);" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                </div>
+
+                <div style="flex: 1; overflow-y: auto; padding: 20px 24px;">
+                    <div style="width: 100%;">
+                        <form id="edit-product-form" onsubmit="submitEditProduct(event)">
+                            <input type="hidden" id="ep-id">
+                            <input type="hidden" id="ep-distributor-id">
+
+                            <!-- Section: Product Info -->
+                            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #94a3b8; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-circle-info" style="color: #6366f1;"></i> Product Information
+                                </div>
+                                <div class="cp-grid-3">
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Product For *</label>
+                                        <select id="ep-target" required disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;background:#f8fafc;color:#94a3b8;transition:all 0.2s;font-family:inherit;">
+                                            <option value="patient_doctor">Patient / Doctor</option>
+                                            <option value="distributor">Distributor</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Product Name *</label>
+                                        <input type="text" id="ep-name" required placeholder="Enter product name" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Product Type *</label>
+                                        <input type="text" id="ep-type" required placeholder="e.g. CPAP,BPAP" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Brand</label>
+                                        <input type="text" id="ep-brand" placeholder="e.g. Airsine" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Model Name</label>
+                                        <input type="text" id="ep-model" placeholder="e.g. AirSense 10" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Images Upload (Multiple)</label>
+                                        <input type="file" id="ep-image" accept="image/*" multiple style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 14px;font-size:14px;outline:none;background:#fff;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                        <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Leave empty to keep existing images. Uploading new images will replace old ones.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section: Pricing & Discounts -->
+                            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #94a3b8; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-indian-rupee-sign" style="color: #10b981;"></i> Pricing & Discounts
+                                </div>
+                                <div class="cp-grid-3">
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Unit MRP (₹) *</label>
+                                        <input type="number" id="ep-mrp" required placeholder="0.00" step="0.01" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#10b981';this.style.boxShadow='0 0 0 3px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Discount (%)</label>
+                                        <input type="number" id="ep-discount" placeholder="0.0" step="0.1" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#10b981';this.style.boxShadow='0 0 0 3px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Selling Price (₹)</label>
+                                        <input type="number" id="ep-selling-price" placeholder="Auto calculate if empty" step="0.01" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#10b981';this.style.boxShadow='0 0 0 3px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Referral Discount (%)</label>
+                                        <input type="number" id="ep-ref-discount" placeholder="0.0" step="0.1" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#10b981';this.style.boxShadow='0 0 0 3px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Tax/GST (%)</label>
+                                        <input type="number" id="ep-gst" placeholder="0.0" step="0.1" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#10b981';this.style.boxShadow='0 0 0 3px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Total Stock Pieces *</label>
+                                        <input type="number" id="ep-stock" required value="0" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#10b981';this.style.boxShadow='0 0 0 3px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;">Status</label>
+                                        <select id="ep-status" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;background:#fff;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#10b981';this.style.boxShadow='0 0 0 3px rgba(16,185,129,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                            <option value="Out of Stock">Out of Stock</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section: Description -->
+                            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #94a3b8; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-align-left" style="color: #f59e0b;"></i> Description
+                                </div>
+                                <div>
+                                    <textarea id="ep-desc" rows="4" placeholder="Detailed product description..." style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;resize:none;transition:all 0.2s;font-family:inherit;" onfocus="this.style.borderColor='#f59e0b';this.style.boxShadow='0 0 0 3px rgba(245,158,11,0.1)'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 14px; justify-content: flex-end; padding-top: 8px; padding-bottom: 16px;">
+                                <button type="button" onclick="switchTab('products-view')" style="padding: 13px 28px; border: 1.5px solid #e2e8f0; border-radius: 12px; background: #f8fafc; color: #64748b; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">Cancel</button>
+                                <button type="submit" class="btn-submit" style="padding: 13px 32px; margin: 0; font-size: 15px; font-weight: 700; box-shadow: 0 6px 20px rgba(99,102,241,0.3); border-radius: 12px; background: linear-gradient(135deg, #6366f1, #4f46e5); color:#fff; cursor: pointer;"><i class="fa-solid fa-check" style="margin-right: 8px;"></i>Update Product</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>

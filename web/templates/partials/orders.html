@@ -1,0 +1,32 @@
+<div id="orders-view" class="panel-page">
+                <div class="header-dashboard">
+                    <div>
+                        <h1>Orders</h1>
+                        <p>Track customer and distributor orders</p>
+                    </div>
+                </div>
+                <div class="dashboard-panel" style="padding: 0; overflow: hidden; margin-top: 16px;">
+                    <div class="filter-header" style="padding: 12px 16px; border-bottom: 1px solid var(--border-glass); margin-bottom: 0; background: rgba(255, 255, 255, 0.4);">
+                        <h3 style="margin: 0;">Order History</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Final Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body">
+                                <!-- Dynamic rows -->
+                                <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>

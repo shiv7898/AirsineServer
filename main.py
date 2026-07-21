@@ -1,19 +1,20 @@
+from fastapi.responses import JSONResponse, FileResponse, RedirectResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.openapi.utils import get_openapi
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
 from fastapi.staticfiles import StaticFiles
-from database import SessionLocal, engine
-import models
-from schemas import SupportQueryCreate, UserCreate, UserLogin, UserResponse, ProductCreate, ProductResponse, OrderCreate, OrderResponse, ReferralCreate, TherapyCreate, MachineSettingsCreate
-from auth import hash_password, verify_password, create_token, verify_token
+from database import SessionLocal, engine, Base
+import app.models as models
+from app.schemas import SupportQueryCreate, UserCreate, UserLogin, UserResponse, ProductCreate, ProductResponse, OrderCreate, OrderResponse, ReferralCreate, TherapyCreate, MachineSettingsCreate
+from app.core.auth import hash_password, verify_password, create_token, verify_token
 import shutil, os
 from datetime import datetime, timedelta
 import pdfplumber
-from exception import (
+from app.core.exception import (
     AppException,
     ValidationException,
     AuthenticationException,
@@ -26,7 +27,7 @@ from exception import (
     validation_exception_handler,
     generic_exception_handler
 )
-from validators import (
+from helpers.validators import (
     validate_email,
     validate_password,
     validate_phone,
@@ -70,7 +71,18 @@ def parse_therapy_data(text):
         "avg_pressure": None,
         "leak_rate": None,
     }
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+
+# Auto migrate products table
+try:
+    with engine.begin() as conn:
+        from sqlalchemy import text
+        result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='products' AND column_name='target_audience';"))
+        if not result.fetchone():
+            conn.execute(text("ALTER TABLE products ADD COLUMN target_audience VARCHAR DEFAULT 'patient_doctor';"))
+            print("Successfully added target_audience to products table")
+except Exception as e:
+    print(f"Migration error: {e}")
 
 app = FastAPI()
 
@@ -79,17 +91,9 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-app.mount("/admin-ui", StaticFiles(directory="static/admin"), name="admin-ui")
+app.mount("/admin-ui", StaticFiles(directory="web/statics/admin"), name="admin-ui")
 
-@app.get("/admin-dashboard")
-@app.get("/dashboard")
-@app.get("/users")
-@app.get("/create-staff")
-@app.get("/products-admin")
-@app.get("/orders-admin")
-@app.get("/queries-admin")
-async def serve_admin_dashboard():
-    return FileResponse("static/admin/index.html")
+# Web routes are now in web/routes.py
 
 @app.get("/")
 async def root():
@@ -97,34 +101,29 @@ async def root():
 
 # CORSMiddleware will be added after routers to ensure it runs first in the stack
 
-from routers import products
-from routers import auth_routes
-from routers import orders
-from routers import patient
-from routers import doctor
-from routers import distributor
-from routers import report
-from routers import admin
-from routers import support
-app.include_router(products.router)
-app.include_router(auth_routes.router)
-app.include_router(orders.router)
-app.include_router(patient.router)
-app.include_router(doctor.router)
-app.include_router(distributor.router)
-app.include_router(report.router)
-app.include_router(admin.router)
-app.include_router(support.router)
+from app.api.router import api_router
+from web.routes import router as web_router
+
+app.include_router(api_router)
+app.include_router(web_router)
 
 # ✅ Auth Middleware
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
     open_routes = [
-        "/register", "/login", "/docs", "/openapi.json", "/products", 
-        "/redoc", "/admin/create-super-admin", "/uploads", 
+        "/web/user/login", "/web/user/register",
+        "/web/auth/login",
+        "/mobile/user/login", "/mobile/user/register",
+        "/mobile/products",
+        "/login", "/register", "/openapi.json", "/products", 
+        "/redoc", "/create-super-admin", "/uploads", 
         "/admin-dashboard", "/admin-ui", "/favicon.ico",
-        "/dashboard", "/users", "/create-staff", "/products-admin",
-        "/orders-admin", "/queries-admin", "/.well-known"
+        "/dashboard", "/users", "/admin-staff", "/distributors", "/create-staff", "/create-user", "/create-product",
+        "/products-admin", "/orders-admin", "/queries-admin", "/profile", "/.well-known", "/api/test-db",
+        "/user-view", "/user-edit",
+        "/staff-view", "/staff-edit",
+        "/distributor-view", "/distributor-edit",
+        "/docs"
     ]
     if request.method == "OPTIONS" or request.url.path == "/" or any(request.url.path.startswith(r) for r in open_routes):
         return await call_next(request)
@@ -143,7 +142,6 @@ async def auth_middleware(request: Request, call_next):
         print(f"Token verified: {token_data}")
         request.state.user = token_data
     except Exception as e:
-        print(f"Token verification failed: {str(e)}")
         return JSONResponse(status_code=401, content={"detail": "Invalid token"})
     
     return await call_next(request)
@@ -164,7 +162,7 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="web/auth/login")
 
 def get_db():
     db = SessionLocal()
@@ -175,9 +173,18 @@ def get_db():
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-        return verify_token(token)
-    except:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        payload = verify_token(token)
+        return payload
+    except Exception as e:
+        raise AuthorizationException(f"Invalid token: {str(e)}")
+
+@app.get("/api/test-db")
+def test_db(db: Session = Depends(get_db)):
+    from fastapi.responses import JSONResponse
+    u = db.query(models.User).filter(models.User.id == 6).first()
+    if u:
+        return JSONResponse({"id": u.id, "name": u.name, "phone": u.phone, "age": u.age, "gender": u.gender, "address": u.home_address})
+    return JSONResponse({"error": "not found"})
 
 # ✅ Add CORS Middleware LAST so it executes FIRST
 app.add_middleware(
