@@ -1,0 +1,251 @@
+<!-- TOP HEADER -->
+<header class="top-header" style="position: relative; z-index: 10;">
+  <style>
+    .top-header {
+      background: transparent !important;
+      border-bottom: none !important;
+      box-shadow: none !important;
+      padding: 24px 32px 16px 32px !important;
+    }
+    .top-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .top-header-left .page-title {
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .top-header .sidebar-toggle-btn {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      border-radius: 8px;
+    }
+    .top-header .sidebar-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.25) !important;
+    }
+    .top-header-center {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      margin-right: 32px;
+    }
+    .top-header .search-bar {
+      width: 400px;
+      max-width: 100%;
+    }
+    .top-header .search-bar input {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 50px !important;
+      color: white !important;
+      padding: 12px 16px 12px 48px !important;
+      font-size: 14px;
+    }
+    .top-header .search-bar i {
+      color: rgba(255, 255, 255, 0.9) !important;
+      left: 20px !important;
+    }
+    .top-header .search-bar input::placeholder {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+    .top-header .search-bar input:focus {
+      background: rgba(255, 255, 255, 0.25) !important;
+      border-color: rgba(255, 255, 255, 0.5) !important;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.1) !important;
+    }
+    
+    .header-profile {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 4px;
+    }
+    .header-profile:hover {
+      opacity: 0.9;
+    }
+    .hp-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ffffff;
+      color: #059669;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+    .hp-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: 0.2px;
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 250px;
+      background: #ffffff !important;
+      border: 1px solid #f1f5f9 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.1) !important;
+      padding: 8px !important;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      z-index: 1000;
+    }
+    .profile-dropdown.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .pd-header {
+      padding: 14px 12px 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: transparent;
+      margin-bottom: 4px;
+    }
+    .pd-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .pd-header .user-name {
+      font-size: 15px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #11998e, #38ef7d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pd-header .user-role {
+      font-size: 10px;
+      color: #11998e;
+      background: #e6fff4;
+      border: 1px solid #38ef7d;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .pd-header .user-email-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .pd-header .user-email-container i {
+      font-size: 14px;
+      color: #11998e;
+    }
+    .pd-header .user-email {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dropdown-divider {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 4px 0;
+      border: none;
+    }
+    .profile-dropdown a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px !important;
+      color: #475569 !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 10px !important;
+      text-decoration: none;
+      transition: all 0.2s ease !important;
+    }
+    .profile-dropdown a i {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+    }
+    .profile-dropdown a.profile-btn i {
+      color: #3b82f6;
+    }
+    .profile-dropdown a.profile-btn:hover {
+      background: #eff6ff !important;
+      color: #1d4ed8 !important;
+      transform: translateX(4px);
+    }
+    .profile-dropdown a.logout-btn i {
+      color: #ef4444;
+    }
+    .profile-dropdown a.logout-btn:hover {
+      background: #fef2f2 !important;
+      color: #b91c1c !important;
+      transform: translateX(4px);
+    }
+  </style>
+  <div class="top-header-left">
+    <button class="sidebar-toggle-btn" onclick="toggleSidebarDesktop()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <h2 class="page-title">AirSine Management Portal</h2>
+  </div>
+  <div class="top-header-center">
+    <div class="search-bar">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Search..." />
+    </div>
+  </div>
+  <div class="top-header-right">
+    <div class="header-profile" onclick="toggleProfileDropdown()">
+      <div class="hp-avatar" id="user-initials">SA</div>
+      <span class="hp-name" id="user-display-name">Super Admin</span>
+      
+      <div class="profile-dropdown" id="profile-dropdown">
+        <div class="pd-header">
+          <div class="pd-header-top">
+            <div class="user-name" id="dropdown-user-name">Super Admin</div>
+            <div class="user-role" id="header-user-role">Admin</div>
+          </div>
+          <div class="user-email-container">
+            <i class="fa-regular fa-envelope"></i>
+            <span class="user-email" id="header-user-email">admin@airsine.com</span>
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a href="#" onclick="switchTab('my-profile-view')" class="profile-btn">
+          <i class="fa-solid fa-user-circle"></i> My Profile
+        </a>
+        <div class="dropdown-divider"></div>
+        <a href="#" onclick="handleLogout()" class="logout-btn">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

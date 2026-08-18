@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine, text
-from app.core.config import settings
+from core.config import settings
 
 def run_migration():
     DATABASE_URL = settings.DATABASE_URL
@@ -15,6 +15,7 @@ def run_migration():
     try:
         with engine.begin() as conn:
             columns_to_add = {
+                "product_code": "VARCHAR",
                 "product_images": "TEXT",
                 "brand": "VARCHAR",
                 "model_name": "VARCHAR",

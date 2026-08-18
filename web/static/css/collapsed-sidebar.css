@@ -1,0 +1,127 @@
+/* ================= COLLAPSED SIDEBAR ================= */
+.sidebar {
+  overflow-x: hidden;
+}
+.sidebar.collapsed {
+  width: 80px;
+  align-items: center;
+  padding: 20px 8px;
+}
+.logo-name,
+.logo-badge,
+.logo-text-wrap {
+  transition:
+    opacity 0.3s ease,
+    max-width 0.3s ease,
+    margin 0.3s ease,
+    padding 0.3s ease,
+    transform 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateX(0);
+  max-width: 200px;
+}
+.sidebar.collapsed .logo-name,
+.sidebar.collapsed .logo-badge,
+.sidebar.collapsed .logo-text-wrap {
+  opacity: 0 !important;
+  max-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateX(-10px) !important;
+  display: none !important;
+}
+.sidebar.collapsed .logo-area {
+  padding: 12px 8px !important;
+  margin-bottom: 24px !important;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 100%;
+  position: relative;
+}
+.sidebar.collapsed .logo-area::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  width: 70%;
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent, #0ea5e9, transparent);
+  border-radius: 4px;
+  opacity: 0.8;
+}
+.sidebar.collapsed .logo-header,
+.sidebar.collapsed .logo-brand {
+  justify-content: center !important;
+}
+.sidebar.collapsed .logo-icon {
+  width: 44px !important;
+  height: 44px !important;
+  transition: all 0.3s ease;
+}
+.nav-item span {
+  transition:
+    opacity 0.3s ease,
+    max-width 0.3s ease,
+    transform 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateX(0);
+  max-width: 200px;
+}
+.sidebar.collapsed .nav-item span {
+  opacity: 0;
+  max-width: 0;
+  margin: 0;
+  padding: 0;
+  transform: translateX(-10px);
+}
+.sidebar.collapsed .nav-item {
+  padding: 12px;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+.sidebar.collapsed .nav-item i {
+  font-size: 16px;
+  width: 20px;
+  margin: 0;
+  text-align: center;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  background: #fff;
+  border: 1px solid var(--border-glass);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  align-items: center;
+  justify-content: center;
+}
+/* Sidebar overlay backdrop (mobile) */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  z-index: 89;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.show {
+  display: block;
+}
+

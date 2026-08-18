@@ -1,14 +1,14 @@
 from fastapi import APIRouter
-
-from web.auth import router as auth_router, login, get_db
-from web.admin import router as admin_router
-from web.products import router as products_router
-from web.orders import router as orders_router
-from web.support import router as support_router
-from web.report import router as report_router
 from sqlalchemy.orm import Session
 from fastapi import Depends
-from app.schemas import UserLogin
+
+from web.controllers.auth import router as auth_router, login, get_db
+from web.controllers.admin import router as admin_router
+from web.controllers.products import router as products_router
+from web.controllers.orders import router as orders_router
+from web.controllers.support import router as support_router
+from web.controllers.report import router as report_router
+from schemas import UserLogin
 
 web_router = APIRouter()
 

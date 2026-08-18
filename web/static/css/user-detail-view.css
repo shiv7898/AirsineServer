@@ -1,0 +1,45 @@
+/* --- User Detail View --- */
+.ud-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ud-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+}
+.ud-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+.ud-value.na {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-style: italic;
+}
+.ud-input {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border: 1.5px solid var(--accent-primary);
+  border-radius: 10px;
+  outline: none;
+  background: rgba(14, 165, 233, 0.04);
+  color: var(--text-primary);
+  font-family: inherit;
+  width: 100%;
+  transition: box-shadow 0.2s;
+}
+.ud-input:focus {
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+

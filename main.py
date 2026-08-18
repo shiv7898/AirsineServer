@@ -7,14 +7,14 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
 from fastapi.staticfiles import StaticFiles
-from database import SessionLocal, engine, Base
-import app.models as models
-from app.schemas import SupportQueryCreate, UserCreate, UserLogin, UserResponse, ProductCreate, ProductResponse, OrderCreate, OrderResponse, ReferralCreate, TherapyCreate, MachineSettingsCreate
-from app.core.auth import hash_password, verify_password, create_token, verify_token
+from core.database import SessionLocal, engine, Base
+import models
+from schemas import SupportQueryCreate, UserCreate, UserLogin, UserResponse, ProductCreate, ProductResponse, OrderCreate, OrderResponse, ReferralCreate, TherapyCreate, MachineSettingsCreate
+from core.security import hash_password, verify_password, create_token, verify_token
 import shutil, os
 from datetime import datetime, timedelta
 import pdfplumber
-from app.core.exception import (
+from core.exceptions import (
     AppException,
     ValidationException,
     AuthenticationException,
@@ -73,16 +73,12 @@ def parse_therapy_data(text):
     }
 Base.metadata.create_all(bind=engine)
 
-# Auto migrate products table
+# Run schema migrations (idempotent - safe to run on every startup)
 try:
-    with engine.begin() as conn:
-        from sqlalchemy import text
-        result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='products' AND column_name='target_audience';"))
-        if not result.fetchone():
-            conn.execute(text("ALTER TABLE products ADD COLUMN target_audience VARCHAR DEFAULT 'patient_doctor';"))
-            print("Successfully added target_audience to products table")
+    from scripts.migrate import run_migrations
+    run_migrations()
 except Exception as e:
-    print(f"Migration error: {e}")
+    print(f"Migration warning: {e}")
 
 app = FastAPI()
 
@@ -90,19 +86,28 @@ app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
+
+
+
+
+
+
+
+
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-app.mount("/admin-ui", StaticFiles(directory="web/statics/admin"), name="admin-ui")
+app.mount("/static", StaticFiles(directory="web/static"), name="static")
+app.mount("/admin-ui", StaticFiles(directory="web/static"), name="admin-ui")
 
 # Web routes are now in web/routes.py
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Airsine"}
+    return RedirectResponse(url="/admin-dashboard")
 
 # CORSMiddleware will be added after routers to ensure it runs first in the stack
 
-from app.api.router import api_router
-from web.routes import router as web_router
+from api.v1.api_router import api_router
+from web.controllers.routes import router as web_router
 
 app.include_router(api_router)
 app.include_router(web_router)
@@ -111,7 +116,12 @@ app.include_router(web_router)
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
     open_routes = [
-        "/web/user/login", "/web/user/register",
+        "/api/v1/web/user/login", "/api/v1/web/user/register",
+        "/api/v1/web/auth/login",
+        "/api/v1/mobile/user/login", "/api/v1/mobile/user/register",
+        "/api/v1/mobile/auth/login", "/api/v1/mobile/auth/register",
+        "/api/v1/mobile/products",
+        "/web/user/login", "/web/user/register", # Fallbacks
         "/web/auth/login",
         "/mobile/user/login", "/mobile/user/register",
         "/mobile/products",
@@ -123,6 +133,12 @@ async def auth_middleware(request: Request, call_next):
         "/user-view", "/user-edit",
         "/staff-view", "/staff-edit",
         "/distributor-view", "/distributor-edit",
+        "/users/view", "/users/edit",
+        "/admin-staff/view", "/admin-staff/edit",
+        "/distributors/view", "/distributors/edit",
+        "/orders/view", "/orders/edit",
+        "/products/view", "/products/edit",
+        "/queries/view", "/queries/edit",
         "/docs"
     ]
     if request.method == "OPTIONS" or request.url.path == "/" or any(request.url.path.startswith(r) for r in open_routes):
@@ -162,7 +178,7 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="web/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/web/auth/login")
 
 def get_db():
     db = SessionLocal()
@@ -181,7 +197,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 @app.get("/api/test-db")
 def test_db(db: Session = Depends(get_db)):
     from fastapi.responses import JSONResponse
-    u = db.query(models.User).filter(models.User.id == 6).first()
+    u = db.query(models.Patient).filter(models.Patient.id == 6).first()
     if u:
         return JSONResponse({"id": u.id, "name": u.name, "phone": u.phone, "age": u.age, "gender": u.gender, "address": u.home_address})
     return JSONResponse({"error": "not found"})

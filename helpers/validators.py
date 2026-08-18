@@ -1,6 +1,6 @@
 import re
 from typing import Optional
-from app.core.exception import ValidationException
+from core.exceptions import ValidationException
 
 def validate_email(email: str) -> str:
     """

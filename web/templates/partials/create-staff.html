@@ -1,22 +1,170 @@
 <div id="create-staff-view" class="panel-page">
-  <div class="header-dashboard">
-    <div>
-      <h1>
-        <i
-          class="fa-solid fa-user-plus"
-          style="color: var(--accent-primary); font-size: 24px"
-        ></i>
-        Add Admin / Sub Admin
-      </h1>
-      <p>
-        Create new administrative accounts and assign granular access
-        permissions
-      </p>
-    </div>
+  <!-- Header -->
+  <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 14px 32px; position: relative; overflow: hidden; flex-shrink: 0; z-index: 10; border-bottom: 1px solid #e2e8f0;">
+      <div style="position: absolute; inset: 0; background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><path d=%22M0 40L40 0H20L0 20M40 40V20L20 40%22 fill=%22none%22 stroke=%22rgba(0,0,0,0.02)%22 stroke-width=%221%22/></svg>'); pointer-events: none;"></div>
+      <div style="position: relative; display: flex; align-items: center; gap: 16px;">
+          <button onclick="switchTab('admin-staff-view')" style="display: flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer; color: #334155; box-shadow: 0 1px 2px rgba(0,0,0,0.02); transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a'" onmouseout="this.style.background='#ffffff'; this.style.color='#334155'">
+              <i class="fa-solid fa-arrow-left"></i> Back to Staff
+          </button>
+          <div>
+              <h1 style="font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; margin-bottom: 2px;">
+                  <i class="fa-solid fa-user-shield" style="font-size: 16px; margin-right: 8px; color: #8b5cf6;"></i>Add Admin / Sub Admin
+              </h1>
+              <p style="color: #64748b; font-size: 11px;">Create new administrative accounts and assign granular access permissions</p>
+          </div>
+      </div>
   </div>
 
-  <div class="dashboard-panel" style="max-width: 100%; padding: 28px 32px">
+  <div style="flex: 1; overflow-y: auto; padding: 28px 32px; background: #f8fafc;">
     <form id="create-staff-form">
+      <style>
+        /* Modernize Form Wrappers */
+        #create-staff-form .form-section {
+          background: #ffffff !important;
+          border: 1px solid rgba(226,232,240,0.8) !important;
+          border-radius: 20px !important;
+          padding: 32px !important;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important;
+          transition: all 0.3s ease !important;
+          margin-bottom: 24px !important;
+        }
+        #create-staff-form .form-section:hover {
+          box-shadow: 0 15px 35px rgba(59,130,246,0.08) !important;
+          border-color: rgba(59,130,246,0.3) !important;
+          transform: translateY(-2px) !important;
+        }
+
+        /* Modernize Section Headers */
+        #create-staff-form .form-section-title {
+          font-size: 13px !important;
+          color: #3b82f6 !important;
+          margin-bottom: 24px !important;
+          letter-spacing: 1.5px !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          border-bottom: none !important;
+          display: flex;
+          align-items: center;
+        }
+        #create-staff-form .form-section-title i {
+          background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15)) !important;
+          padding: 8px !important;
+          border-radius: 8px !important;
+          color: #3b82f6 !important;
+          margin-right: 12px !important;
+        }
+
+        /* Modernize Inputs */
+        #create-staff-form input,
+        #create-staff-form select,
+        #create-staff-form textarea {
+          background: #f8fafc !important;
+          border: 2px solid #e2e8f0 !important;
+          border-radius: 12px !important;
+          padding: 12px 16px !important;
+          font-weight: 500 !important;
+          color: #334155 !important;
+          transition: all 0.2s ease !important;
+          width: 100% !important;
+          outline: none !important;
+        }
+        #create-staff-form input:focus,
+        #create-staff-form select:focus,
+        #create-staff-form textarea:focus {
+          background: #ffffff !important;
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 4px rgba(59,130,246,0.15) !important;
+          transform: translateY(-1px) !important;
+        }
+        
+        /* Modernize Labels */
+        #create-staff-form label:not(.perm-checkbox-label) {
+          font-size: 13px !important;
+          font-weight: 700 !important;
+          color: #475569 !important;
+          margin-bottom: 8px !important;
+          display: block !important;
+        }
+        
+        /* Modernize Submit Buttons */
+        #create-staff-form button[type="submit"] {
+          background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+          border: none !important;
+          border-radius: 14px !important;
+          padding: 14px 24px !important;
+          font-size: 15px !important;
+          font-weight: 700 !important;
+          letter-spacing: 0.5px !important;
+          box-shadow: 0 10px 20px rgba(59,130,246,0.3) !important;
+          transition: all 0.3s ease !important;
+          color: white !important;
+        }
+        #create-staff-form button[type="submit"]:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 15px 25px rgba(59,130,246,0.4) !important;
+        }
+
+        #create-staff-form button[type="reset"] {
+          border: none !important;
+          border-radius: 14px !important;
+          padding: 14px 24px !important;
+          font-size: 15px !important;
+          font-weight: 700 !important;
+          background: #f1f5f9 !important;
+          color: #64748b !important;
+          transition: all 0.3s ease !important;
+        }
+        #create-staff-form button[type="reset"]:hover {
+          background: #e2e8f0 !important;
+          color: #334155 !important;
+        }
+
+        /* Fix input wrapper icons */
+        #create-staff-form .input-wrapper {
+          position: relative;
+        }
+        #create-staff-form .input-wrapper i {
+          position: absolute;
+          left: 14px !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          color: #94a3b8 !important;
+          font-size: 14px !important;
+          z-index: 2;
+        }
+        #create-staff-form .input-wrapper textarea ~ i, #create-staff-form .input-wrapper i.fa-house {
+          top: 24px !important;
+        }
+        #create-staff-form .input-wrapper input,
+        #create-staff-form .input-wrapper select,
+        #create-staff-form .input-wrapper textarea {
+          padding-left: 44px !important;
+        }
+
+        /* Modernize Permissions Modules */
+        #create-staff-form .perm-module {
+          background: #f8fafc !important;
+          border: 1.5px solid #e2e8f0 !important;
+          border-radius: 16px !important;
+          padding: 16px !important;
+          transition: all 0.2s ease !important;
+        }
+        #create-staff-form .perm-module:hover {
+          border-color: #3b82f6 !important;
+          background: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(59,130,246,0.1) !important;
+        }
+        #create-staff-form .perm-module h4 {
+          font-size: 13px !important;
+          font-weight: 800 !important;
+          color: #1e293b !important;
+          margin-bottom: 12px !important;
+        }
+        #create-staff-form .perm-module h4 i {
+          color: #3b82f6 !important;
+          margin-right: 6px !important;
+        }
+      </style>
       <!-- Section 1: Basic Info -->
       <div class="form-section">
         <div class="form-section-title">
@@ -110,7 +258,7 @@
             <label>Date of Birth</label>
             <div class="input-wrapper">
               <i class="fa-solid fa-calendar"></i
-              ><input type="date" id="staff-dob" required />
+              ><input type="date" id="staff-dob" required onclick="this.max=new Date().toISOString().split('T')[0]" onchange="calculateAgeFromDOB(this.value, 'staff-age')" />
             </div>
           </div>
         </div>
@@ -248,6 +396,16 @@
               <label class="perm-checkbox-label"
                 ><input type="checkbox" id="perm-staff-create" /><span
                   >Create</span
+                ></label
+              >
+              <label class="perm-checkbox-label"
+                ><input type="checkbox" id="perm-staff-edit" /><span
+                  >Edit</span
+                ></label
+              >
+              <label class="perm-checkbox-label"
+                ><input type="checkbox" id="perm-staff-delete" /><span
+                  >Delete</span
                 ></label
               >
             </div>

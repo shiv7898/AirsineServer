@@ -1,0 +1,77 @@
+<div id="admin-staff-view" class="panel-page">
+    <!-- <div class="header-dashboard">
+        <div>
+            <h3>Admin Staff Directory</h3>
+            <p>Manage administrators and sub-administrators</p>
+        </div>
+    </div> -->
+
+    <div class="dashboard-panel" style="padding: 0; overflow: hidden; flex: 1; display: flex; flex-direction: column; min-height: 0; margin-top: 16px;">
+        <div class="filter-header" style="padding: 10px 32px; border-bottom: 1px solid var(--border-glass); margin-bottom: 0; background: rgba(255, 255, 255, 0.4); display: flex; justify-content: space-between; align-items: center;">
+            <!-- <h2 style="margin:0;"><i class="fa-solid fa-user-shield"></i> Administrative Staff</h2> -->
+            <div>
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 800;">
+                    <div style="background: linear-gradient(135deg, #4ade80, #10b981); width: 35px; height: 35px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                        <i class="fa-solid fa-user-shield" style="font-size: 18px;"></i>
+                    </div>
+                    <span style="background: linear-gradient(to right, #1e293b, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Admin Staff Directory</span>
+                </h3>
+                <p style="margin: 0px 0 0 52px; color: #64748b; font-size: 11px; font-weight: 500; letter-spacing: 0.02em;">Manage administrators and sub-administrators</p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <i class="fa-solid fa-search" style="position: absolute; left: 12px; color: #94a3b8; font-size: 13px;"></i>
+                    <input type="text" placeholder="Search ID, Name, Email..." style="padding: 8px 12px 8px 32px; border-radius: 12px; border: 1px solid var(--border-glass); outline: none; font-size: 13px; width: 220px; transition: all 0.2s; background: rgba(255,255,255,0.7);" onfocus="this.style.borderColor='#0ea5e9'; this.style.boxShadow='0 0 0 3px rgba(14,165,233,0.1)'" onblur="this.style.borderColor='var(--border-glass)'; this.style.boxShadow='none'" onkeyup="filterStaffData(this.value)">
+                </div>
+                <button id="btn-create-staff" class="btn-submit" style="width: auto; padding: 6px 14px; margin: 0; font-size: 12px; background: linear-gradient(135deg, #6366f1, #4f46e5);" onclick="switchTab('create-staff-view')"><i class="fa-solid fa-user-plus"></i> Add Admin Staff</button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <style>
+                #admin-staff-view table {
+                    width: 100%;
+                    border-collapse: separate;
+                    border-spacing: 0;
+                }
+                #admin-staff-view thead th {
+                    background: #f8fafc;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    font-size: 12px;
+                    font-weight: 700;
+                    letter-spacing: 0.05em;
+                    padding: 14px 16px;
+                    border-bottom: 2px solid #e2e8f0;
+                    text-align: left;
+                }
+                #admin-staff-view thead th:first-child {
+                    border-top-left-radius: 8px;
+                }
+                #admin-staff-view thead th:last-child {
+                    border-top-right-radius: 8px;
+                }
+            </style>
+            <table>
+                <thead>
+                    <tr>
+                        <th>SR no</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-staff-table-body">
+                    <!-- Dynamic rows -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination Container -->
+        <div id="staff-pagination"></div>
+    </div>
+</div>

@@ -1,0 +1,29 @@
+/* --- Visual Section --- */
+.dashboard-body-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 0 20px;
+  width: 100%;
+}
+.dashboard-panel {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  padding: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-soft);
+  min-width: 0;
+}
+.dashboard-panel h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+

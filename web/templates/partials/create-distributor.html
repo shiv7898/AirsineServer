@@ -1,0 +1,743 @@
+<div id="create-distributor-view" class="panel-page">
+  <!-- Header -->
+  <div
+    style="
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 14px 32px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      border-bottom: 1px solid #e2e8f0;
+    "
+  >
+    <div
+      style="
+        position: absolute;
+        inset: 0;
+        background: url(&quot;data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><path d=%22M0 40L40 0H20L0 20M40 40V20L20 40%22 fill=%22none%22 stroke=%22rgba(0,0,0,0.02)%22 stroke-width=%221%22/></svg>&quot;);
+        pointer-events: none;
+      "
+    ></div>
+    <div
+      style="position: relative; display: flex; align-items: center; gap: 16px"
+    >
+      <button
+        onclick="switchTab('distributors-view')"
+        style="
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          padding: 6px 14px;
+          border-radius: 10px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          color: #334155;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+          transition: all 0.2s;
+        "
+        onmouseover="
+          this.style.background = '#f1f5f9';
+          this.style.color = '#0f172a';
+        "
+        onmouseout="
+          this.style.background = '#ffffff';
+          this.style.color = '#334155';
+        "
+      >
+        <i class="fa-solid fa-arrow-left"></i> Back to Distributors
+      </button>
+      <div>
+        <h1
+          style="
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            margin-bottom: 2px;
+          "
+        >
+          <i
+            class="fa-solid fa-truck-fast"
+            style="font-size: 16px; margin-right: 8px; color: #f97316"
+          ></i
+          >Create New Distributor
+        </h1>
+        <p style="color: #64748b; font-size: 11px">
+          Fill in the details below to register a new distributor
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Body -->
+  <div style="flex: 1; overflow-y: auto; padding: 28px 32px">
+    <form
+      id="create-distributor-form"
+      onsubmit="submitCreateDistributor(event)"
+    >
+      <input type="hidden" id="d-role" value="distributor" />
+
+      <!-- Section: Basic Info -->
+      <div
+        style="
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 18px;
+          padding: 24px;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        "
+      >
+        <div
+          style="
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #94a3b8;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          "
+        >
+          <i
+            class="fa-solid fa-circle-info"
+            style="color: var(--accent-primary)"
+          ></i>
+          Basic Information
+        </div>
+        <div
+          style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px"
+        >
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Full Name *</label
+            ><input
+              type="text"
+              id="d-name"
+              required
+              placeholder="Enter full name"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#0ea5e9';
+                this.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Email *</label
+            ><input
+              type="email"
+              id="d-email"
+              required
+              placeholder="email@example.com"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#0ea5e9';
+                this.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Password *</label
+            ><input
+              type="password"
+              id="d-password"
+              required
+              placeholder="Min 6 characters"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#0ea5e9';
+                this.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Phone *</label
+            ><input
+              type="text"
+              id="d-phone"
+              required
+              placeholder="10-digit mobile"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#0ea5e9';
+                this.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Gender *</label
+            >
+            <select
+              id="d-gender"
+              required
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                background: #fff;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="this.style.borderColor = '#0ea5e9'"
+              onblur="this.style.borderColor = '#e2e8f0'"
+            >
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Age *</label
+            ><input
+              type="number"
+              id="d-age"
+              required
+              min="1"
+              max="120"
+              placeholder="Age"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#0ea5e9';
+                this.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Date of Birth</label
+            ><input
+              type="date"
+              id="d-dob"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="this.style.borderColor = '#0ea5e9'"
+              onblur="this.style.borderColor = '#e2e8f0'"
+              onclick="this.max = new Date().toISOString().split('T')[0]"
+              onchange="calculateAgeFromDOB(this.value, 'd-age')"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Address -->
+      <div
+        style="
+          background: #fff;
+          border: 1px solid #e2e8f0;
+          border-radius: 18px;
+          padding: 24px;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        "
+      >
+        <div
+          style="
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #94a3b8;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          "
+        >
+          <i class="fa-solid fa-location-dot" style="color: #10b981"></i>
+          Address Details
+        </div>
+        <div
+          style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px"
+        >
+          <div style="grid-column: span 3">
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Home Address</label
+            ><input
+              type="text"
+              id="d-address"
+              placeholder="Building/Street address"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#10b981';
+                this.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Area / City</label
+            ><input
+              type="text"
+              id="d-area"
+              placeholder="Area or locality"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#10b981';
+                this.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >District</label
+            ><input
+              type="text"
+              id="d-district"
+              placeholder="District"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#10b981';
+                this.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >State</label
+            ><input
+              type="text"
+              id="d-state"
+              placeholder="State"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#10b981';
+                this.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Pincode *</label
+            ><input
+              type="text"
+              id="d-pincode"
+              required
+              placeholder="6-digit pincode"
+              style="
+                width: 100%;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#10b981';
+                this.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Distributor Fields -->
+      <div
+        id="d-distributor-fields"
+        style="
+          background: #fff;
+          border: 1px solid #fbcfe8;
+          border-radius: 18px;
+          padding: 24px;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 8px rgba(236, 72, 153, 0.07);
+        "
+      >
+        <div
+          style="
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #94a3b8;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          "
+        >
+          <i class="fa-solid fa-truck-fast" style="color: #ec4899"></i>
+          Distributor Details
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Company Name</label
+            ><input
+              type="text"
+              id="d-company"
+              placeholder="Company / firm name"
+              style="
+                width: 100%;
+                border: 1.5px solid #fbcfe8;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#ec4899';
+                this.style.boxShadow = '0 0 0 3px rgba(236,72,153,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#fbcfe8';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >Business Type</label
+            ><input
+              type="text"
+              id="d-business-type"
+              placeholder="e.g. Wholesale, Retail"
+              style="
+                width: 100%;
+                border: 1.5px solid #fbcfe8;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#ec4899';
+                this.style.boxShadow = '0 0 0 3px rgba(236,72,153,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#fbcfe8';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748b;
+                margin-bottom: 6px;
+              "
+              >License Number</label
+            ><input
+              type="text"
+              id="d-license"
+              placeholder="License / registration no."
+              style="
+                width: 100%;
+                border: 1.5px solid #fbcfe8;
+                border-radius: 10px;
+                padding: 11px 14px;
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s;
+                font-family: inherit;
+              "
+              onfocus="
+                this.style.borderColor = '#ec4899';
+                this.style.boxShadow = '0 0 0 3px rgba(236,72,153,0.1)';
+              "
+              onblur="
+                this.style.borderColor = '#fbcfe8';
+                this.style.boxShadow = 'none';
+              "
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div
+        style="
+          display: flex;
+          gap: 14px;
+          justify-content: flex-end;
+          padding-top: 8px;
+          padding-bottom: 16px;
+        "
+      >
+        <button
+          type="button"
+          onclick="switchTab('distributors-view')"
+          style="
+            padding: 13px 28px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          "
+          onmouseover="this.style.background = '#f1f5f9'"
+          onmouseout="this.style.background = '#f8fafc'"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="btn-submit"
+          style="
+            padding: 13px 32px;
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
+            border-radius: 12px;
+          "
+        >
+          <i class="fa-solid fa-truck-fast" style="margin-right: 8px"></i>Create
+          Distributor
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

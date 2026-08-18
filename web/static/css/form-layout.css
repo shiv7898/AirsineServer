@@ -1,0 +1,52 @@
+/* --- Form layout --- */
+.staff-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.profile-layout-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-left: 20px;
+}
+@media (max-width: 1024px) {
+  .profile-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .staff-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .responsive-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+.form-group {
+  margin-bottom: 0;
+  position: relative;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.input-wrapper input,
+.input-wrapper select,
+.input-wrapper textarea {
+  padding: 12px 12px 12px 44px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+

@@ -1,0 +1,146 @@
+/* ================= AUTHENTICATION PAGE ================= */
+.auth-page-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: white; /* Deep green outer background */
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.auth-container {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 500px;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Left Side */
+.auth-left {
+  flex: 1;
+  background: transparent;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #ffffff;
+  overflow: visible;
+}
+.auth-left-content {
+  position: relative;
+  z-index: 10;
+  max-width: 480px;
+  top: -50px;
+}
+.auth-left-content p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+
+/* The overlapping circles on the left side */
+.glass-orb {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.15); /* 3D drop shadow */
+}
+
+/* Main massive background sphere */
+.orb-1 {
+  width: 650px;
+  height: 650px;
+  top: -200px;
+  left: -130px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #34d399 0%,
+    #10b981 40%,
+    #064e3b 100%
+  );
+}
+
+/* Bottom right protruding sphere */
+.orb-2 {
+  width: 150px;
+  height: 150px;
+  bottom: 51px;
+  right: 64px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #34d399 0%,
+    #10b981 40%,
+    #064e3b 100%
+  );
+  z-index: 2;
+}
+
+/* Top left overlapping sphere */
+.orb-3 {
+  width: 300px;
+  height: 300px;
+  top: 360px;
+  left: -134px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #34d399 0%,
+    #10b981 40%,
+    #064e3b 100%
+  );
+  z-index: 2;
+}
+
+/* Right Side */
+.auth-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  background: transparent;
+  overflow: visible;
+}
+/* Bottom right corner sphere on the right panel */
+.auth-right::after {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #34d399 0%,
+    #10b981 40%,
+    #064e3b 100%
+  );
+  border-radius: 50%;
+  box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.1);
+  bottom: -78px;
+  right: -50px;
+  z-index: 0;
+  pointer-events: none;
+}
+.auth-form-box {
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  z-index: 10;
+}
+

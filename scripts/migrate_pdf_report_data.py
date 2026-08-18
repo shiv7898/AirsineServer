@@ -5,7 +5,7 @@ Run once with:  python scripts/migrate_pdf_report_data.py
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database import engine
+from core.database import engine
 from sqlalchemy import text
 
 COLUMNS = [

@@ -1,0 +1,141 @@
+<!-- Mobile sidebar overlay -->
+<div
+  class="sidebar-overlay"
+  id="sidebar-overlay"
+  onclick="closeSidebar()"
+></div>
+<button
+  class="mobile-menu-btn"
+  id="mobile-menu-btn"
+  onclick="toggleSidebar()"
+>
+  <i class="fa-solid fa-bars"></i>
+</button>
+<aside class="sidebar">
+  <div>
+    <div class="logo-area">
+      <div class="logo-header">
+        <div class="logo-brand">
+          <div class="logo-icon">
+            <div class="shimmer-effect"></div>
+            <img
+              src="/admin-ui/assets/images/logo1.png"
+              alt="Airsine Logo"
+            />
+          </div>
+          <span class="logo-name">AirSine</span>
+        </div>
+        <span id="sidebar-logo-role" class="logo-badge">ADMIN</span>
+      </div>
+
+      <div class="logo-text-wrap">
+        <div class="logo-meta-item">
+          <div class="meta-icon icon-email">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <span id="sidebar-logo-email">user@airsine.com</span>
+        </div>
+        <div class="logo-meta-item">
+          <div class="meta-icon icon-id">
+            <i class="fa-solid fa-id-badge"></i>
+          </div>
+          <span id="sidebar-logo-id"></span>
+        </div>
+      </div>
+    </div>
+    <ul class="nav-links">
+      <li>
+        <div
+          onclick="switchTab('dashboard-view')"
+          id="nav-dashboard-view"
+          class="nav-item active"
+        >
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </div>
+      </li>
+      <!-- <li class="nav-section-label">User Management</li> -->
+      <li>
+        <div
+          onclick="switchTab('users-view')"
+          id="nav-users-view"
+          class="nav-item"
+        >
+          <i class="fa-solid fa-hospital-user"></i>
+          <span>Patients & Doctors</span>
+        </div>
+      </li>
+      <li>
+        <div
+          onclick="switchTab('admin-staff-view')"
+          id="nav-admin-staff-view"
+          class="nav-item"
+        >
+          <i class="fa-solid fa-user-shield"></i>
+          <span>Admin & Staff</span>
+        </div>
+      </li>
+      <li>
+        <div
+          onclick="switchTab('distributors-view')"
+          id="nav-distributors-view"
+          class="nav-item"
+        >
+          <i class="fa-solid fa-truck-field"></i>
+          <span>Distributors</span>
+        </div>
+      </li>
+      <li>
+        <!-- <div
+          onclick="switchTab('create-staff-view')"
+          id="nav-create-staff-view"
+          class="nav-item"
+        >
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Add Staff Member</span>
+        </div> -->
+      </li>
+      <!-- <li class="nav-section-label">Inventory & Orders</li> -->
+      <li>
+        <div
+          onclick="switchTab('products-view')"
+          id="nav-products-view"
+          class="nav-item"
+        >
+          <i class="fa-solid fa-boxes-stacked"></i>
+          <span>Products</span>
+        </div>
+      </li>
+      <li>
+        <!-- <div
+          onclick="switchTab('create-product-view')"
+          id="nav-create-product-view"
+          class="nav-item"
+        >
+          <i class="fa-solid fa-box-open"></i>
+          <span>Add New Product</span>
+        </div> -->
+      </li>
+      <li>
+        <div
+          onclick="switchTab('orders-view')"
+          id="nav-orders-view"
+          class="nav-item"
+        >
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>Orders</span>
+        </div>
+      </li>
+      <li>
+        <div
+          onclick="switchTab('queries-view')"
+          id="nav-queries-view"
+          class="nav-item"
+        >
+          <i class="fa-solid fa-headset"></i>
+          <span>Support Queries</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</aside>

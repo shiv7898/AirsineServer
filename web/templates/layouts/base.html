@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AirSine Management Portal</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="/admin-ui/assets/images/favicon.png"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- FontAwesome for Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/admin-ui/css/style.css?v=3.1.2" />
+  </head>
+  <body>
+    <!-- Toast message -->
+    <div id="toast" class="toast">
+      <i id="toast-icon" class="fa-solid"></i>
+      <span id="toast-msg">Success</span>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loader" class="loader-overlay">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- View User Modal -->
+    <div
+      id="view-user-modal"
+      class="loader-overlay"
+      style="
+        z-index: 2100;
+        backdrop-filter: blur(5px);
+        background: rgba(15, 23, 42, 0.4);
+      "
+    >
+      <div
+        style="
+          width: 100%;
+          max-width: 750px;
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          max-height: 90vh;
+          overflow-y: auto;
+          position: relative;
+        "
+      >
+        <div
+          style="
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+          "
+        >
+          <h2
+            style="
+              margin: 0;
+              font-size: 20px;
+              color: #0f172a;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            "
+          >
+            <div
+              style="
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+                background: #eff6ff;
+                color: #3b82f6;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+              "
+            >
+              <i class="fa-solid fa-address-card"></i>
+            </div>
+            User Profile
+          </h2>
+          <button
+            onclick="closeModal('view-user-modal')"
+            style="
+              background: none;
+              border: none;
+              font-size: 20px;
+              color: #64748b;
+              cursor: pointer;
+            "
+          >
+            &times;
+          </button>
+        </div>
+        <div id="view-user-content">
+          <!-- Content dynamically injected via JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div
+      id="edit-user-modal"
+      class="loader-overlay"
+      style="
+        z-index: 2100;
+        backdrop-filter: blur(5px);
+        background: rgba(15, 23, 42, 0.4);
+      "
+    >
+      <div
+        style="
+          width: 100%;
+          max-width: 800px;
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          max-height: 90vh;
+          overflow-y: auto;
+          position: relative;
+          padding: 32px;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+            margin-top: -16px;
+          "
+        >
+          <h2
+            style="
+              margin: 0;
+              font-size: 20px;
+              color: #0f172a;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            "
+          >
+            <div
+              style="
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+                background: #f0fdf4;
+                color: #16a34a;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+              "
+            >
+              <i class="fa-solid fa-user-pen"></i>
+            </div>
+            Edit User Profile
+          </h2>
+          <button
+            onclick="closeModal('edit-user-modal')"
+            style="
+              background: none;
+              border: none;
+              font-size: 20px;
+              color: #64748b;
+              cursor: pointer;
+            "
+          >
+            &times;
+          </button>
+        </div>
+        <form id="edit-user-form">
+          <input type="hidden" id="edit-user-id" />
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+              margin-bottom: 16px;
+            "
+          >
+            <div class="form-group" style="margin-bottom: 0">
+              <label>Full Name</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="edit-name" required />
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0">
+              <label>Email Address</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="edit-email" required />
+              </div>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr;
+              gap: 16px;
+              margin-bottom: 16px;
+            "
+          >
+            <div class="form-group" style="margin-bottom: 0">
+              <label>Phone Number</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-phone"></i>
+                <input type="text" id="edit-phone" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0">
+              <label>Age</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-cake-candles"></i>
+                <input type="number" id="edit-age" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0">
+              <label>Gender</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-venus-mars"></i>
+                <select id="edit-gender">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Role Fields Section -->
+          <div
+            id="edit-role-fields"
+            style="
+              background: #f8fafc;
+              padding: 16px;
+              border-radius: 12px;
+              margin-bottom: 16px;
+              border: 1px solid #e2e8f0;
+            "
+          >
+            <!-- Doctor Fields -->
+            <div
+              id="edit-doctor-fields"
+              style="
+                display: none;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+              "
+            >
+              <div class="form-group" style="margin-bottom: 0">
+                <label>Hospital/Clinic</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-hospital"></i>
+                  <input type="text" id="edit-hospital" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 0">
+                <label>Specialisation</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-user-doctor"></i>
+                  <input type="text" id="edit-specialisation" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Distributor Fields -->
+            <div
+              id="edit-distributor-fields"
+              style="
+                display: none;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+              "
+            >
+              <div class="form-group" style="margin-bottom: 0">
+                <label>Company Name</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-building"></i>
+                  <input type="text" id="edit-company-name" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 0">
+                <label>License Number</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-file-contract"></i>
+                  <input type="text" id="edit-license-number" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Address Fields Section -->
+          <div
+            style="
+              background: #f8fafc;
+              padding: 16px;
+              border-radius: 12px;
+              margin-bottom: 16px;
+              border: 1px solid #e2e8f0;
+            "
+          >
+            <h4
+              style="
+                margin: 0 0 12px 0;
+                font-size: 14px;
+                color: #334155;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+              "
+            >
+              <i class="fa-solid fa-location-dot"></i> Address Details
+            </h4>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 12px;
+              "
+            >
+              <div class="form-group" style="margin-bottom: 0">
+                <label>Locality</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-map-pin"></i>
+                  <input type="text" id="edit-locality" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 0">
+                <label>District / City</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-city"></i>
+                  <input type="text" id="edit-district" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 0">
+                <label>State</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-map"></i>
+                  <input type="text" id="edit-state" />
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                gap: 16px;
+              "
+            >
+              <div class="form-group" style="margin-bottom: 0">
+                <label>Pincode</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-mail-bulk"></i>
+                  <input type="text" id="edit-pincode" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 0">
+                <label>Building / Street Address</label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-house"></i>
+                  <input type="text" id="edit-building" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px">
+            <button type="submit" class="btn-submit" style="max-width: 220px">
+              <i class="fa-solid fa-check"></i> Save Changes
+            </button>
+            <button
+              type="button"
+              onclick="closeModal('edit-user-modal')"
+              class="btn-submit"
+              style="
+                max-width: 140px;
+                background: rgba(100, 116, 139, 0.15);
+                color: var(--text-muted);
+                box-shadow: none;
+              "
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 1. AUTH LOGIN PAGE -->
+    {% include 'pages/login.html' %}
+
+    <!-- 2. DASHBOARD CONTAINER -->
+    <div id="dashboard-page" class="dashboard-container">
+      <!-- SIDEBAR LAYOUT -->
+      {% include 'layouts/sidebar.html' %}
+
+      <!-- MAIN WORKSPACE -->
+      <main class="main-content" style="position: relative;">
+        <!-- Extended Hero Background -->
+        <div class="hero-bg" id="main-hero-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 280px; background: linear-gradient(135deg, #11998e 0%, #4da074 100%); z-index: 0; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; transition: height 0.3s ease;"></div>
+
+        <!-- NAVBAR HEADER LAYOUT -->
+        {% include 'layouts/navbar.html' %}
+
+        <!-- PAGE VIEWS (TABLES & MAIN PANELS) -->
+        {% include 'pages/dashboard.html' %}
+        {% include 'pages/users.html' %}
+        {% include 'pages/admin-staff.html' %}
+        {% include 'pages/distributors.html' %}
+        {% include 'pages/user-detail.html' %}
+        {% include 'pages/my-profile.html' %}
+        {% include 'pages/products.html' %}
+        {% include 'pages/orders.html' %}
+        {% include 'pages/queries.html' %}
+
+        <!-- PARTIAL FORMS & MODALS -->
+        {% include 'partials/create-staff.html' %}
+        {% include 'partials/create-product.html' %}
+        {% include 'partials/edit-product.html' %}
+        {% include 'partials/view-product.html' %}
+        {% include 'partials/view-order.html' %}
+        {% include 'partials/edit-order.html' %}
+        {% include 'partials/view-query.html' %}
+        {% include 'partials/edit-query.html' %}
+        {% include 'partials/create-user.html' %}
+        {% include 'partials/create-distributor.html' %}
+        {% include 'partials/image-viewer.html' %}
+      </main>
+    </div>
+
+    <!-- ================= PANEL JAVASCRIPT ================= -->
+    <script src="/admin-ui/js/apiConfig.js"></script>
+    <!-- Core App Modules (split from app.js) -->
+    <script src="/admin-ui/js/core/utils.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/core/helpers.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/core/permissions.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/core/dashboard.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/core/init.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/auth.js?v=3.1.8"></script>
+
+    <!-- Products Module -->
+    <script src="/admin-ui/js/products/listProducts.js?v=3.1.7"></script>
+    <script src="/admin-ui/js/products/createProduct.js?v=3.1.7"></script>
+    <script src="/admin-ui/js/products/editProduct.js?v=3.1.7"></script>
+    <script src="/admin-ui/js/products/viewProduct.js?v=3.1.7"></script>
+    <script src="/admin-ui/js/products/deleteProduct.js?v=3.1.7"></script>
+    <script src="/admin-ui/js/orders/listOrders.js?v=3.1.8"></script>
+    <script src="/admin-ui/js/orders/viewOrder.js?v=3.1.8"></script>
+    <script src="/admin-ui/js/orders/editOrder.js?v=3.1.8"></script>
+    <script src="/admin-ui/js/queries/listQueries.js?v=3.2.3"></script>
+    <script src="/admin-ui/js/queries/viewQuery.js?v=3.2.3"></script>
+    <script src="/admin-ui/js/queries/editQuery.js?v=3.2.3"></script>
+    <!-- UI Components and Shared User UI -->
+    <script src="/admin-ui/js/core/uiComponents.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/users_shared/userPermissionsUI.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/users_shared/userDetailUI.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/users_shared/fetchUsers.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/users_shared/userUtils.js?v=3.1.6"></script>
+
+    <!-- Users Module: Distributors -->
+    <script src="/admin-ui/js/distributors/listDistributors.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/distributors/createDistributor.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/distributors/editDistributor.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/distributors/viewDistributor.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/distributors/deleteDistributor.js?v=3.1.6"></script>
+
+    <!-- Users Module: Patients & Doctors -->
+    <script src="/admin-ui/js/patients_doctors/listPatientsDoctors.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/patients_doctors/createPatientDoctor.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/patients_doctors/editPatientDoctor.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/patients_doctors/viewPatientDoctor.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/patients_doctors/deletePatientDoctor.js?v=3.1.6"></script>
+
+    <!-- Users Module: Staff -->
+    <script src="/admin-ui/js/staff/listStaff.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/staff/createStaff.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/staff/editStaff.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/staff/viewStaff.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/staff/deleteStaff.js?v=3.1.6"></script>
+  </body>
+</html>

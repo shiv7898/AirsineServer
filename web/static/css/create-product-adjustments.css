@@ -1,0 +1,43 @@
+/* --- Create Product Adjustments --- */
+#create-product-form input,
+#create-product-form select,
+#create-product-form textarea {
+  font-size: 13px !important;
+  padding: 9px 12px !important;
+}
+.cp-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.cp-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.cp-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .cp-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .cp-grid-2,
+  .cp-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .cp-span-2 {
+    grid-column: span 1 !important;
+  }
+}
+
+td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  font-size: 13px;
+  vertical-align: middle;
+}

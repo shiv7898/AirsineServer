@@ -1,0 +1,8 @@
+/* ================= DASHBOARD LAYOUT ================= */
+.dashboard-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+

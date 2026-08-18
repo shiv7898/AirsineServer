@@ -1,0 +1,51 @@
+/* --- Panel Pages --- */
+.panel-page {
+  display: none;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 5;
+}
+.panel-page.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+.panel-page.active::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+#dashboard-view.active,
+#users-view.active,
+#user-detail-view.active,
+#orders-view.active,
+#view-order-view.active,
+#edit-order-view.active,
+#queries-view.active,
+/* #create-staff-view.active, */
+#products-view.active,
+#admin-staff-view.active,
+#distributors-view.active {
+  padding: 0 28px 0px;
+}
+#create-user-view.active,
+#create-product-view.active,
+#create-distributor-view.active {
+  padding: 0;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
