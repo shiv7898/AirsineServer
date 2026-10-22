@@ -5,7 +5,10 @@ window.productsPerPage = 10;
 
 window.fetchProducts = async function() {
     const token = localStorage.getItem('admin_token');
-    if (!token) return;
+    if (!token) {
+        if (window.showLoginPage) window.showLoginPage();
+        return;
+    }
 
     const tbody = document.getElementById('products-table-body');
     if (!tbody) return;

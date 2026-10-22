@@ -4,6 +4,7 @@ from datetime import datetime
 
 class OrderCreate(BaseModel):
     product_id: int
+    order_number: Optional[str] = None
     quantity: int
     referral_code: Optional[str] = None
     customer_name: str
@@ -16,7 +17,9 @@ class OrderCreate(BaseModel):
 
 class OrderResponse(BaseModel):
     id: int
+    order_number: Optional[str] = None
     product_id: int
+    order_number: Optional[str] = None
     quantity: int
     total_amount: float
     discount_amount: float

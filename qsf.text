@@ -1,0 +1,19 @@
+APP_ENV=dev
+DATABASE_URL=postgresql://postgres:7410@localhost/hospitaldb
+SECRET_KEY=dev_hospital123_secret
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+HOST=0.0.0.0
+PORT=8000
+
+# ==============================================================
+# SMTP EMAIL CONFIGURATION
+# ==============================================================
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=shivdhakad202@gmail.com
+SMTP_PASSWORD=nhykgnkillcfrcem
+SMTP_FROM_EMAIL=shivdhakad202@gmail.com
+SMTP_FROM_NAME=Airsine Healthcare
+SMTP_TLS=True
+OTP_EXPIRE_MINUTES=10

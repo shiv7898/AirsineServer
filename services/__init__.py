@@ -6,3 +6,5 @@ from .product_service import ProductService
 from .user_service import UserService
 from .order_service import OrderService
 from .support_service import SupportService
+from .email_service import EmailService
+from .password_reset_service import PasswordResetService

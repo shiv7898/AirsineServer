@@ -41,6 +41,7 @@ def buy_machine_customer(order: OrderCreate, request: Request, db: Session = Dep
         )
         return {
             "id": new_order.id,
+            "order_number": new_order.order_number,
             "product_id": new_order.product_id,
             "quantity": new_order.quantity,
             "total_amount": new_order.total_amount,
@@ -79,6 +80,7 @@ def buy_machine_distributor(order: OrderCreate, request: Request, db: Session = 
         )
         return {
             "id": new_order.id,
+            "order_number": new_order.order_number,
             "product_id": new_order.product_id,
             "quantity": new_order.quantity,
             "total_amount": new_order.total_amount,
@@ -109,6 +111,7 @@ def my_orders(
         product = db.query(models.Product).filter(models.Product.id == o.product_id).first()
         result.append({
             "order_id": o.id,
+            "order_number": o.order_number,
             "product_name": product.product_name if product else "N/A",
             "product_type": product.product_type if product else "N/A",
             "product_image": product.product_image if product else None,

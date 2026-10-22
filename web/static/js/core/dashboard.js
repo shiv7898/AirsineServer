@@ -8,7 +8,10 @@ let rolesChart = null;
 // Fetch dashboard stats from API and populate UI cards
 async function refreshDashboardData() {
   const token = localStorage.getItem("admin_token");
-  if (!token) return;
+  if (!token) {
+    if (window.showLoginPage) window.showLoginPage();
+    return;
+  }
 
   toggleLoader(true);
   try {
@@ -17,6 +20,7 @@ async function refreshDashboardData() {
     });
 
     const data = await response.json();
+    console.log("data of dashbord",data)
     toggleLoader(false);
 
     if (!response.ok)

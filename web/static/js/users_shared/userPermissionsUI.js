@@ -39,12 +39,15 @@ function renderPermissionsSection(user) {
     const permSection = document.getElementById('ud-permissions-section');
     const permList = document.getElementById('ud-permissions-list');
 
-    if ((user.role === 'admin' || user.role === 'sub_admin') && user.permissions) {
+    if (user.role === 'admin' || user.role === 'sub_admin' || user.role === 'staff') {
         permSection.style.display = 'block';
         let permHtml = '';
 
         try {
-            const p = JSON.parse(user.permissions);
+            let p = {};
+            if (user.permissions) {
+                p = typeof user.permissions === 'string' ? JSON.parse(user.permissions) : user.permissions;
+            }
 
             // Build badge HTML for each module
             for (const [module, actions] of Object.entries(p)) {

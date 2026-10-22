@@ -17,7 +17,7 @@
       font-size: 16px;
       font-weight: 800;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      /* text-transform: uppercase; */
       margin: 0;
     }
     .top-header .sidebar-toggle-btn {
@@ -71,9 +71,9 @@
       transition: all 0.2s ease;
       padding: 4px;
     }
-    .header-profile:hover {
+    /* .header-profile:hover {
       opacity: 0.9;
-    }
+    } */
     .hp-avatar {
       width: 36px;
       height: 36px;
@@ -100,8 +100,8 @@
       top: calc(100% + 8px);
       right: 0;
       width: 250px;
-      background: #ffffff !important;
-      border: 1px solid #f1f5f9 !important;
+      background: #f1f5f9 !important;
+      border: 1px solid #e2e8f0 !important;
       border-radius: 16px !important;
       box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.1) !important;
       padding: 8px !important;
@@ -192,28 +192,26 @@
       width: 18px;
       text-align: center;
     }
-    .profile-dropdown a.profile-btn i {
-      color: #3b82f6;
+   
+    .profile-chevron {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 12px;
+      margin-left: 4px;
+      transition: transform 0.3s ease;
     }
-    .profile-dropdown a.profile-btn:hover {
-      background: #eff6ff !important;
-      color: #1d4ed8 !important;
-      transform: translateX(4px);
+    .header-profile:hover .profile-chevron {
+      color: #11998e;
     }
-    .profile-dropdown a.logout-btn i {
-      color: #ef4444;
-    }
-    .profile-dropdown a.logout-btn:hover {
-      background: #fef2f2 !important;
-      color: #b91c1c !important;
-      transform: translateX(4px);
+    .header-profile.show .profile-chevron {
+      transform: rotate(180deg);
+      color: #11998e;
     }
   </style>
   <div class="top-header-left">
     <button class="sidebar-toggle-btn" onclick="toggleSidebarDesktop()">
       <i class="fa-solid fa-bars"></i>
     </button>
-    <h2 class="page-title">AirSine Management Portal</h2>
+    <h2 class="page-title">AirSine Management Portal  </h2>
   </div>
   <div class="top-header-center">
     <div class="search-bar">
@@ -225,6 +223,7 @@
     <div class="header-profile" onclick="toggleProfileDropdown()">
       <div class="hp-avatar" id="user-initials">SA</div>
       <span class="hp-name" id="user-display-name">Super Admin</span>
+      <i class="fa-solid fa-chevron-down profile-chevron"></i>
       
       <div class="profile-dropdown" id="profile-dropdown">
         <div class="pd-header">

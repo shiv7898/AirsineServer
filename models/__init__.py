@@ -5,3 +5,4 @@ from .support import SupportQuery
 from .referral import ReferralCode
 from .patient_data import TherapyData, MachineSettings, PdfReportData
 from .notification import Notification
+from .password_reset import PasswordReset

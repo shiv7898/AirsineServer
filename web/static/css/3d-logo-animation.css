@@ -449,13 +449,13 @@
 .btn-submit {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(
+  /* background: linear-gradient(
     135deg,
     var(--accent-primary),
     var(--accent-secondary)
-  );
+  ); */
   border: none;
-  border-radius: 16px;
+  border-radius: 8px;
   color: #ffffff;
   font-size: 16px;
   font-weight: 600;

@@ -23,6 +23,16 @@ window.viewPatientDoctor = async function(userId, editMode = false, role = null)
         if (typeof window.setOriginalUserData === 'function') window.setOriginalUserData(user);
         if (typeof window.setDetailBackTab === 'function') window.setDetailBackTab('users-view');
 
+        // Unhide metrics and fields that might be hidden by staff view
+        ['ud-orders-card', 'ud-commission-card', 'ud-discount-card', 'ud-referral-card'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'flex';
+        });
+        ['ud-commission-field-container', 'ud-discount-field-container'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = '';
+        });
+
         // 1. Populate top identity and quick stats
         const initials = (user.name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
         document.getElementById('ud-avatar').textContent = initials;

@@ -5,6 +5,10 @@
 const API_ENDPOINTS = {
     // Authentication
     LOGIN: '/api/v1/web/user/login',
+    FORGOT_PASSWORD: '/api/v1/web/auth/forgot-password',
+    VERIFY_OTP: '/api/v1/web/auth/verify-otp',
+    RESET_PASSWORD: '/api/v1/web/auth/reset-password',
+    RESEND_OTP: '/api/v1/web/auth/resend-otp',
     
     // Dashboard
     DASHBOARD: '/api/v1/web/admin/dashboard',

@@ -9,7 +9,10 @@ window.ordersPerPage = 10;
 
 window.fetchOrders = async function() {
     const token = localStorage.getItem('admin_token');
-    if (!token) return;
+    if (!token) {
+        if (window.showLoginPage) window.showLoginPage();
+        return;
+    }
 
     const tbody = document.getElementById('orders-table-body');
     if (!tbody) return;

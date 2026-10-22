@@ -18,7 +18,10 @@ window.distributorsPerPage = 10;
 
 window.fetchUsers = async function() {
     const token = localStorage.getItem('admin_token');
-    if (!token) return;
+    if (!token) {
+        if (window.showLoginPage) window.showLoginPage();
+        return;
+    }
 
     const roleFilter = document.getElementById('role-filter') ? document.getElementById('role-filter').value : '';
     

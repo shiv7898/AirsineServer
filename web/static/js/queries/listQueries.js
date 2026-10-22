@@ -4,10 +4,13 @@
 
 async function fetchQueries() {
     const token = localStorage.getItem('admin_token');
-    if (!token) return;
+    if (!token) {
+        if (window.showLoginPage) window.showLoginPage();
+        return;
+    }
 
     const tbody = document.getElementById('queries-table-body');
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading queries...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading queries...</td></tr>';
     
     try {
         const response = await fetch(API_ENDPOINTS.QUERIES, {
@@ -19,7 +22,7 @@ async function fetchQueries() {
         console.log("Queries Data:", data);
         
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 20px;">No queries found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">No queries found</td></tr>';
             return;
         }
         
@@ -54,8 +57,17 @@ async function fetchQueries() {
                 </div>`;
             }
 
+            const dateString = q.created_at.endsWith('Z') ? q.created_at : q.created_at + 'Z';
+            const qDate = new Date(dateString);
+            const dateStr = qDate.toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric'});
+            const timeStr = qDate.toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'});
+
             tr.innerHTML = `
                 <td><span style="font-family: monospace; font-weight: 700; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-size: 11px;">#${q.id}</span></td>
+                <td>
+                    <div style="font-size: 12px; font-weight: 600; color: #334155;">${dateStr}</div>
+                    <div style="font-size: 11px; color: #64748b;">${timeStr}</div>
+                </td>
                 <td style="font-weight: 700; font-size: 12px; color: var(--text-primary);">${q.user_name}<br><span style="font-size:11px; font-weight: 500; color: var(--text-muted);">${q.user_email}</span></td>
                 <td><span class="badge">${q.user_role}</span></td>
                 <td style="font-size: 11px;">${q.query_type}</td>
@@ -70,7 +82,7 @@ async function fetchQueries() {
             tbody.appendChild(tr);
         });
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--accent-danger); padding: 20px;">${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--accent-danger); padding: 20px;">${err.message}</td></tr>`;
     }
 }
 

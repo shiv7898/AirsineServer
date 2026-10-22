@@ -32,10 +32,12 @@ window.openViewQueryPage = function (queryId) {
     : '<span class="badge" style="background: rgba(239,68,68,0.1); color: var(--accent-danger); font-size: 14px; padding: 6px 12px;"><i class="fa-solid fa-clock"></i> Pending</span>';
 
   // Format Dates
-  const createdDate = new Date(q.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  const dateString = q.created_at.endsWith('Z') ? q.created_at : q.created_at + 'Z';
+  const createdDate = new Date(dateString).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
   let resolvedDateHTML = "";
   if (isResolved && q.resolved_at) {
-      const rDate = new Date(q.resolved_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+      const resDateString = q.resolved_at.endsWith('Z') ? q.resolved_at : q.resolved_at + 'Z';
+      const rDate = new Date(resDateString).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
       resolvedDateHTML = `
         <div style="font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Resolved At</div>
         <div style="font-size: 14px; font-weight: 500; color: #334155; margin-top: 4px;">${rDate}</div>

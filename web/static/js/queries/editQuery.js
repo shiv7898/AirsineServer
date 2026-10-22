@@ -33,7 +33,8 @@ window.openEditQueryPage = function (queryId) {
       return;
   }
 
-  const createdDate = new Date(q.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  const dateString = q.created_at.endsWith('Z') ? q.created_at : q.created_at + 'Z';
+  const createdDate = new Date(dateString).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 
   let imagesHTML = "";
   if (q.image) {

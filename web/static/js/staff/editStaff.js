@@ -17,13 +17,9 @@ window.editStaff = function(userId, role) {
 
     // Permissions (Show for staff)
     const permSection = document.getElementById('ud-permissions-section');
-    if (permSection) {
-        permSection.style.display = 'block';
-        const permList = document.getElementById('ud-permissions-list');
-        const permEdit = document.getElementById('ud-permissions-edit');
-        if (permList) permList.style.display = 'none';
-        if (permEdit) permEdit.style.display = 'block';
-    }
+    const permEditSection = document.getElementById('ud-permissions-edit-section');
+    if (permSection) permSection.style.display = 'none';
+    if (permEditSection) permEditSection.style.display = 'block';
 };
 
 window.submitUpdateStaffRole = async function() {
@@ -41,8 +37,6 @@ window.submitUpdateStaffRole = async function() {
         age: parseInt(document.getElementById('e-age').value) || null,
         status: document.getElementById('e-status').value,
         verificationStatus: document.getElementById('e-verification').value,
-        commission: parseFloat(document.getElementById('e-commission').value) || 0,
-        discount: parseFloat(document.getElementById('e-discount').value) || 0,
 
         homeAddress: document.getElementById('e-address').value,
         area: document.getElementById('e-area').value,
@@ -109,10 +103,10 @@ window.submitUpdateStaffRole = async function() {
         showToast(`${role.replace('_', ' ').toUpperCase()} updated successfully!`);
         
         // Hide edit list, show view list again
-        const permList = document.getElementById('ud-permissions-list');
-        const permEdit = document.getElementById('ud-permissions-edit');
-        if (permList) permList.style.display = 'flex';
-        if (permEdit) permEdit.style.display = 'none';
+        const permSection = document.getElementById('ud-permissions-section');
+        const permEditSection = document.getElementById('ud-permissions-edit-section');
+        if (permSection) permSection.style.display = 'block';
+        if (permEditSection) permEditSection.style.display = 'none';
         
         if (typeof window.closeEditUser === 'function') window.closeEditUser();
         
@@ -126,10 +120,10 @@ window.submitUpdateStaffRole = async function() {
 };
 
 window.closeEditUserOverrides = function() {
-    const permList = document.getElementById('ud-permissions-list');
-    const permEdit = document.getElementById('ud-permissions-edit');
-    if (permList) permList.style.display = 'flex';
-    if (permEdit) permEdit.style.display = 'none';
+    const permSection = document.getElementById('ud-permissions-section');
+    const permEditSection = document.getElementById('ud-permissions-edit-section');
+    if (permSection) permSection.style.display = 'block';
+    if (permEditSection) permEditSection.style.display = 'none';
     if (typeof window.closeEditUser === 'function') window.closeEditUser();
 };
 // Attach this to the cancel button dynamically or in html

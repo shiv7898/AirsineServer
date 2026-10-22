@@ -8,11 +8,14 @@ from web.controllers.products import router as products_router
 from web.controllers.orders import router as orders_router
 from web.controllers.support import router as support_router
 from web.controllers.report import router as report_router
+from web.controllers.password_reset import router as password_reset_router
 from schemas import UserLogin
 
 web_router = APIRouter()
 
 web_router.include_router(auth_router, prefix="/user")
+web_router.include_router(password_reset_router, prefix="/auth")
+web_router.include_router(password_reset_router, prefix="/user")
 web_router.include_router(admin_router, prefix="/admin")
 web_router.include_router(products_router, prefix="/products")
 web_router.include_router(orders_router, prefix="/orders")

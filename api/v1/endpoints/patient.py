@@ -373,8 +373,13 @@ def support_query(
     db: Session = Depends(get_db)
 ):
     current_user = request.state.user
+    role = current_user.get("role", "patient")
     
-    user_db = db.query(models.Patient).filter(models.Patient.id == current_user["user_id"]).first()
+    if role == "doctor":
+        user_db = db.query(models.Doctor).filter(models.Doctor.id == current_user["user_id"]).first()
+    else:
+        user_db = db.query(models.Patient).filter(models.Patient.id == current_user["user_id"]).first()
+        
     if not user_db:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -384,7 +389,8 @@ def support_query(
     if images:
         for img in images:
             if img.filename:
-                img_filename = f"pat_{current_user['user_id']}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{img.filename}"
+                prefix = "doc" if role == "doctor" else "pat"
+                img_filename = f"{prefix}_{current_user['user_id']}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{img.filename}"
                 image_path = f"uploads/support/{img_filename}"
                 with open(image_path, "wb") as buffer:
                     shutil.copyfileobj(img.file, buffer)
@@ -394,6 +400,7 @@ def support_query(
 
     new_query = models.SupportQuery(
         user_id=current_user["user_id"],
+        user_role=role,
         query_type=category,
         message=message,
         image=image_filename_str,
@@ -402,3 +409,27 @@ def support_query(
     db.add(new_query)
     db.commit()
     return {"message": "Query submitted! We will respond within 24 hours."}
+
+@router.get("/support-query")
+def get_support_queries(request: Request, db: Session = Depends(get_db)):
+    current_user = request.state.user
+    role = current_user.get("role", "patient")
+    
+    queries = db.query(models.SupportQuery).filter(
+        models.SupportQuery.user_id == current_user["user_id"],
+        models.SupportQuery.user_role == role
+    ).order_by(models.SupportQuery.created_at.desc()).all()
+    
+    return [
+        {
+            "id": q.id,
+            "query_type": q.query_type,
+            "message": q.message,
+            "status": q.status,
+            "created_at": q.created_at.isoformat() if q.created_at else None,
+            "resolution_message": q.resolution_message,
+            "resolved_at": q.resolved_at.isoformat() if q.resolved_at else None,
+            "image": q.image
+        }
+        for q in queries
+    ]

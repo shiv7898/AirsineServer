@@ -58,7 +58,7 @@ window.enableDetailEdit = function() {
     const loggedInRole = localStorage.getItem('admin_role');
     const isSuperAdmin = loggedInRole === 'super_admin';
     const editedRole = window.originalUserData ? window.originalUserData.role : '';
-    const isEditedAdmin = ['admin', 'sub_admin'].includes(editedRole);
+    const isEditedAdmin = ['admin', 'sub_admin', 'staff'].includes(editedRole);
 
     const permEditSection = document.getElementById('ud-permissions-edit-section');
     if (isSuperAdmin && isEditedAdmin) {
@@ -119,7 +119,7 @@ window.closeEditUser = function() {
     if (permEditSection) permEditSection.style.display = 'none';
 
     const editedRole = window.originalUserData ? window.originalUserData.role : '';
-    const isEditedAdmin = ['admin', 'sub_admin'].includes(editedRole);
+    const isEditedAdmin = ['admin', 'sub_admin', 'staff'].includes(editedRole);
     const permSection = document.getElementById('ud-permissions-section');
     if (isEditedAdmin && permSection) permSection.style.display = 'block';
 };
@@ -131,7 +131,10 @@ window.closeEditUser = function() {
 // ─────────────────────────────────────────────────────────────
 async function saveUserEdit() {
     const token = localStorage.getItem('admin_token');
-    if (!token) return;
+    if (!token) {
+        if (window.showLoginPage) window.showLoginPage();
+        return;
+    }
 
     const userId = document.getElementById('ud-current-user-id').value;
     if (!userId) return;

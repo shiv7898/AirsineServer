@@ -86,6 +86,13 @@
 
         // Tab Navigation (also updates URL hash)
         function switchTab(tabId) {
+            // Guard: Token check on internal tab switching
+            const token = localStorage.getItem('admin_token');
+            if (!token) {
+                if (window.showLoginPage) window.showLoginPage();
+                return;
+            }
+
             document.querySelectorAll('.panel-page').forEach(page => {
                 page.classList.remove('active');
             });
@@ -109,8 +116,8 @@
             if (path && window.location.pathname !== path) {
                 if (tabId === 'user-detail-view' && window.location.pathname.match(/\/(users|distributors|admin-staff)\/(view|edit)\/\d+/)) {
                     // Do nothing, preserve the specific user view path in the address bar
-                } else if ((tabId === 'view-order-view' || tabId === 'edit-order-view' || tabId === 'view-product-view' || tabId === 'edit-product-view') && window.location.pathname.match(/\/(orders|products)\/(view|edit)\/\d+/)) {
-                    // Do nothing, preserve the specific order/product view path
+                } else if ((tabId === 'view-order-view' || tabId === 'edit-order-view' || tabId === 'view-product-view' || tabId === 'edit-product-view' || tabId === 'view-query-view' || tabId === 'edit-query-view') && window.location.pathname.match(/\/(orders|products|queries)\/(view|edit)\/\d+/)) {
+                    // Do nothing, preserve the specific order/product/query view path
                 } else {
                     history.pushState(null, '', path);
                 }
@@ -168,7 +175,12 @@
         // Navigate to the tab based on current URL path
         function routeFromPath() {
             const token = localStorage.getItem('admin_token');
-            if (!token) return; // not logged in, ignore
+            if (!token) {
+                if (window.location.pathname !== '/login') {
+                    if (window.showLoginPage) window.showLoginPage();
+                }
+                return;
+            }
 
             if (window.location.pathname.startsWith('/users/view/')) {
                 const parts = window.location.pathname.split('/');

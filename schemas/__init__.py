@@ -4,3 +4,10 @@ from .order import OrderCreate, OrderResponse
 from .support import SupportQueryCreate, SupportQueryResponse, SupportQueryResolve
 from .referral import ReferralCreate
 from .patient_data import TherapyCreate, MachineSettingsCreate
+from .password_reset import (
+    ForgotPasswordRequest,
+    VerifyOtpRequest,
+    ResetPasswordRequest,
+    ResendOtpRequest,
+    PasswordResetResponse,
+)

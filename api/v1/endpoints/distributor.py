@@ -67,6 +67,7 @@ def distributor_orders(request: Request, db: Session = Depends(get_db)):
 
         result.append({
             "order_id": o.id,
+            "order_number": o.order_number,
             "product_name": product.product_name if product else "N/A",
             "product_type": product.product_type if product else "N/A",
             "quantity": o.quantity if o.quantity else 1,
@@ -243,6 +244,7 @@ def distributor_transactions(request: Request, db: Session = Depends(get_db)):
 
         result.append({
             "order_id": o.id,
+            "order_number": o.order_number,
             "product_name": product.product_name if product else "N/A",
             "product_type": product.product_type if product else "N/A",
             "quantity": o.quantity,
@@ -373,6 +375,7 @@ def get_distributor_personal_orders(
         product = db.query(models.Product).filter(models.Product.id == o.product_id).first()
         result_data.append({
             "order_id": o.id,
+            "order_number": o.order_number,
             "product_name": product.product_name if product else "N/A",
             "quantity": o.quantity,
             "final_amount": o.final_amount,
@@ -491,6 +494,7 @@ def distributor_support_query(
 
         new_query = models.SupportQuery(
             user_id=current_user["user_id"],
+            user_role="distributor",
             query_type=category,
             message=message,
             image=image_filename_str,
@@ -505,6 +509,31 @@ def distributor_support_query(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/support-query")
+def get_distributor_support_queries(request: Request, db: Session = Depends(get_db)):
+    current_user = request.state.user
+    if current_user["role"] != "distributor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    queries = db.query(models.SupportQuery).filter(
+        models.SupportQuery.user_id == current_user["user_id"],
+        models.SupportQuery.user_role == "distributor"
+    ).order_by(models.SupportQuery.created_at.desc()).all()
+    
+    return [
+        {
+            "id": q.id,
+            "query_type": q.query_type,
+            "message": q.message,
+            "status": q.status,
+            "created_at": q.created_at.isoformat() if q.created_at else None,
+            "resolution_message": q.resolution_message,
+            "resolved_at": q.resolved_at.isoformat() if q.resolved_at else None,
+            "image": q.image
+        }
+        for q in queries
+    ]
 
 @router.get("/reports-data")
 def get_distributor_reports_data(request: Request, db: Session = Depends(get_db)):

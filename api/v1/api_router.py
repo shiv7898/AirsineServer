@@ -7,10 +7,13 @@ from api.v1.endpoints.doctor import router as doctor_router
 from api.v1.endpoints.distributor import router as distributor_router
 from api.v1.endpoints.products import router as products_router
 from api.v1.endpoints.orders import router as orders_router
+from api.v1.endpoints.password_reset import router as password_reset_router
 
 mobile_v1_router = APIRouter()
 
 mobile_v1_router.include_router(auth_router, prefix="/user")
+mobile_v1_router.include_router(password_reset_router, prefix="/user")
+mobile_v1_router.include_router(password_reset_router, prefix="/auth")
 mobile_v1_router.include_router(patient_router, prefix="/patient")
 mobile_v1_router.include_router(doctor_router, prefix="/doctor")
 mobile_v1_router.include_router(distributor_router, prefix="/distributor")
@@ -20,3 +23,4 @@ mobile_v1_router.include_router(orders_router, prefix="/orders")
 api_router = APIRouter()
 api_router.include_router(web_api_router, prefix="/api/v1/web")
 api_router.include_router(mobile_v1_router, prefix="/api/v1/mobile")
+api_router.include_router(password_reset_router, prefix="/api/v1/auth")

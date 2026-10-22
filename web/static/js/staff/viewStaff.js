@@ -45,10 +45,7 @@ window.viewStaff = async function(userId, editMode = false, role = null) {
         document.getElementById('ud-current-user-id').value = user.id;
         document.getElementById('ud-id').textContent = user.customId || user.id;
         document.getElementById('ud-created').textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN') : 'N/A';
-        document.getElementById('ud-orders').textContent = user.totalOrders || 0;
-        document.getElementById('ud-commission').textContent = user.commission !== undefined ? `${user.commission}%` : '0%';
-        document.getElementById('ud-discount').textContent = user.discount !== undefined ? `${user.discount}%` : '0%';
-        document.getElementById('ud-referral').textContent = user.referralCode || 'N/A';
+
         document.getElementById('ud-last-login').textContent = user.lastLogin ? new Date(user.lastLogin).toLocaleString('en-IN') : 'Never';
 
         // 2. Populate basic and address info view & edit values
@@ -62,8 +59,7 @@ window.viewStaff = async function(userId, editMode = false, role = null) {
             window.setUdField('v-role', 'e-role', user.role);
             window.setUdField('v-status', 'e-status', user.status || 'Active', true);
             window.setUdField('v-verification', 'e-verification', user.verificationStatus || 'Pending', true);
-            window.setUdField('v-commission', 'e-commission', user.commission);
-            window.setUdField('v-discount-field', 'e-discount', user.discount);
+
             
             window.setUdField('v-address', 'e-address', user.homeAddress);
             window.setUdField('v-area', 'e-area', user.area);
@@ -77,6 +73,20 @@ window.viewStaff = async function(userId, editMode = false, role = null) {
         const roleFields = document.getElementById('ud-role-fields');
         if (roleSection) roleSection.style.display = 'none';
         if (roleFields) roleFields.innerHTML = '';
+
+        // Hide specific metrics and fields not relevant for staff
+        const elementsToHide = [
+            'ud-orders-card',
+            'ud-commission-card',
+            'ud-discount-card',
+            'ud-referral-card',
+            'ud-commission-field-container',
+            'ud-discount-field-container'
+        ];
+        elementsToHide.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
 
         // 4. Permissions section
         // Reset edit permissions checkboxes
@@ -96,27 +106,35 @@ window.viewStaff = async function(userId, editMode = false, role = null) {
         const permSection = document.getElementById('ud-permissions-section');
         const permList = document.getElementById('ud-permissions-list');
         
-        if (user.permissions) {
+        if (user.role === 'admin' || user.role === 'sub_admin' || user.role === 'staff') {
             if (permSection) permSection.style.display = 'block';
             let permHtml = '';
+            
+            let p = {};
             try {
-                const p = JSON.parse(user.permissions);
-                for (const [module, actions] of Object.entries(p)) {
-                    if (actions.length > 0) {
-                        permHtml += `
-                            <div style="background: rgba(248, 250, 252, 0.8); border: 1px solid var(--border-glass); border-radius: 12px; padding: 12px 16px; min-width: 150px;">
-                                <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px;">${module}</div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                            `;
-                        actions.forEach(act => {
-                            permHtml += `<span style="background: rgba(14, 165, 233, 0.1); color: #0284c7; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase;">${act}</span>`;
-                        });
-                        permHtml += `</div></div>`;
-                    }
+                if (user.permissions) {
+                    p = typeof user.permissions === 'string' ? JSON.parse(user.permissions) : user.permissions;
                 }
-                if (!permHtml) permHtml = '<span style="color: var(--text-muted); font-style: italic;">No permissions assigned.</span>';
+            } catch (e) {
+                console.error("Error parsing permissions", e);
+            }
 
-                // Populate edit checkboxes
+            for (const [module, actions] of Object.entries(p)) {
+                if (actions && actions.length > 0) {
+                    permHtml += `
+                        <div style="background: rgba(248, 250, 252, 0.8); border: 1px solid var(--border-glass); border-radius: 12px; padding: 12px 16px; min-width: 150px;">
+                            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px;">${module}</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        `;
+                    actions.forEach(act => {
+                        permHtml += `<span style="background: rgba(14, 165, 233, 0.1); color: #0284c7; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase;">${act}</span>`;
+                    });
+                    permHtml += `</div></div>`;
+                }
+            }
+            if (!permHtml) permHtml = '<span style="color: var(--text-muted); font-style: italic;">No permissions assigned.</span>';
+
+            // Populate edit checkboxes
                 if (p.users) {
                     if (p.users.includes('view')) document.getElementById('ep-perm-user-view').checked = true;
                     if (p.users.includes('create')) document.getElementById('ep-perm-user-create').checked = true;
@@ -150,9 +168,6 @@ window.viewStaff = async function(userId, editMode = false, role = null) {
                     if (p.queries.includes('edit')) document.getElementById('ep-perm-query-edit').checked = true;
                 }
                 if (permList) permList.innerHTML = permHtml;
-            } catch (e) {
-                if (permList) permList.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Invalid permissions data.</span>';
-            }
         } else {
             if (permSection) permSection.style.display = 'none';
         }

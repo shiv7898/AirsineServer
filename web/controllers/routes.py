@@ -1,3 +1,4 @@
+from fastapi import requests
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -39,4 +40,6 @@ templates = Jinja2Templates(directory="web/templates")
 @router.get("/queries/view/{item_id}", include_in_schema=False)
 @router.get("/queries/edit/{item_id}", include_in_schema=False)
 async def serve_admin_dashboard(request: Request):
-    return templates.TemplateResponse("layouts/base.html", {"request": request})
+    return templates.TemplateResponse(
+        request=request,
+        name="layouts/base.html",context={})

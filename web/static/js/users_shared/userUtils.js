@@ -15,7 +15,7 @@ window.getAvatarHtml = (user) => {
 
 window.getActionsHtml = (user) => {
     let moduleName = 'users';
-    if (user.role === 'admin' || user.role === 'sub_admin') moduleName = 'staff';
+    if (user.role === 'admin' || user.role === 'sub_admin' || user.role === 'staff') moduleName = 'staff';
     else if (user.role === 'distributor') moduleName = 'distributors';
 
     const uCanEdit = window.hasPermission(moduleName, 'edit');

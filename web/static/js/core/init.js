@@ -3,27 +3,41 @@
 // Handles page startup, login/dashboard switching, sidebar, and profile UI
 // ============================================================================
 
-// On page load: check token and show correct page
+// On page load: Do NOT check token for opening login page.
+// Enforce token checks only when accessing internal/dashboard pages.
 document.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("admin_token");
-  if (token) {
-    // Backfill admin_role from JWT payload if missing (old sessions)
-    if (!localStorage.getItem("admin_role")) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        if (payload.role) localStorage.setItem("admin_role", payload.role);
-      } catch (e) {}
-    }
-    showDashboard();
-  } else {
+  const currentPath = window.location.pathname;
+
+  // 1. Initial login page: Do NOT check token for opening login page
+  if (currentPath === "/login") {
     showLoginPage();
+    return;
   }
+
+  // 2. Protected/Internal pages: Must verify token
+  const token = localStorage.getItem("admin_token");
+  if (!token) {
+    // If user is on any protected route and has no token -> redirect to login page
+    showLoginPage();
+    return;
+  }
+
+  // Token found -> validate role and display dashboard
+  if (!localStorage.getItem("admin_role")) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload.role) localStorage.setItem("admin_role", payload.role);
+    } catch (e) {}
+  }
+  showDashboard();
 });
 
 // Show Login page, hide Dashboard
 function showLoginPage() {
-  document.getElementById("auth-page").style.display = "flex";
-  document.getElementById("dashboard-page").style.display = "none";
+  const authPage = document.getElementById("auth-page");
+  const dashPage = document.getElementById("dashboard-page");
+  if (authPage) authPage.style.display = "flex";
+  if (dashPage) dashPage.style.display = "none";
   if (window.location.pathname !== "/login") {
     history.pushState(null, "", "/login");
   }
@@ -31,7 +45,15 @@ function showLoginPage() {
 
 // Show Dashboard, fill user info in sidebar/header/profile
 function showDashboard() {
-  document.getElementById("auth-page").style.display = "none";
+  // Guard: Never display dashboard without an active admin token
+  const token = localStorage.getItem("admin_token");
+  if (!token) {
+    showLoginPage();
+    return;
+  }
+
+  const authPage = document.getElementById("auth-page");
+  if (authPage) authPage.style.display = "none";
   const dash = document.getElementById("dashboard-page");
   dash.style.display = "flex";
   dash.style.flexDirection = "row";
@@ -191,7 +213,9 @@ function toggleSidebarDesktop() {
 // Toggle profile dropdown menu visibility
 function toggleProfileDropdown() {
   const dropdown = document.getElementById("profile-dropdown");
+  const profile = document.querySelector(".header-profile");
   if (dropdown) dropdown.classList.toggle("show");
+  if (profile) profile.classList.toggle("show");
 }
 
 // Close profile dropdown when clicking outside
@@ -201,6 +225,16 @@ document.addEventListener("click", (e) => {
   if (profile && dropdown) {
     if (!profile.contains(e.target)) {
       dropdown.classList.remove("show");
+      profile.classList.remove("show");
     }
   }
 });
+
+// Make navigation & layout helpers globally accessible
+window.showLoginPage = showLoginPage;
+window.showDashboard = showDashboard;
+window.toggleSidebar = toggleSidebar;
+window.closeSidebar = closeSidebar;
+window.toggleSidebarDesktop = toggleSidebarDesktop;
+window.toggleProfileDropdown = toggleProfileDropdown;
+

@@ -21,7 +21,7 @@
     />
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="/admin-ui/css/style.css?v=3.1.2" />
+    <link rel="stylesheet" href="/admin-ui/css/style.css?v=3.2.1" />
   </head>
   <body>
     <!-- Toast message -->
@@ -419,6 +419,7 @@
 
     <!-- 1. AUTH LOGIN PAGE -->
     {% include 'pages/login.html' %}
+    {% include 'partials/forgot-password-modal.html' %}
 
     <!-- 2. DASHBOARD CONTAINER -->
     <div id="dashboard-page" class="dashboard-container">
@@ -462,30 +463,31 @@
     <!-- ================= PANEL JAVASCRIPT ================= -->
     <script src="/admin-ui/js/apiConfig.js"></script>
     <!-- Core App Modules (split from app.js) -->
-    <script src="/admin-ui/js/core/utils.js?v=3.2.0"></script>
+    <script src="/admin-ui/js/core/utils.js?v=3.2.1"></script>
     <script src="/admin-ui/js/core/helpers.js?v=3.2.0"></script>
     <script src="/admin-ui/js/core/permissions.js?v=3.2.0"></script>
-    <script src="/admin-ui/js/core/dashboard.js?v=3.2.0"></script>
-    <script src="/admin-ui/js/core/init.js?v=3.2.0"></script>
-    <script src="/admin-ui/js/auth.js?v=3.1.8"></script>
+    <script src="/admin-ui/js/core/dashboard.js?v=3.2.1"></script>
+    <script src="/admin-ui/js/core/init.js?v=3.2.1"></script>
+    <script src="/admin-ui/js/auth.js?v=3.1.9"></script>
+    <script src="/admin-ui/js/forgotPassword.js?v=2.0.0"></script>
 
     <!-- Products Module -->
-    <script src="/admin-ui/js/products/listProducts.js?v=3.1.7"></script>
+    <script src="/admin-ui/js/products/listProducts.js?v=3.1.8"></script>
     <script src="/admin-ui/js/products/createProduct.js?v=3.1.7"></script>
     <script src="/admin-ui/js/products/editProduct.js?v=3.1.7"></script>
     <script src="/admin-ui/js/products/viewProduct.js?v=3.1.7"></script>
     <script src="/admin-ui/js/products/deleteProduct.js?v=3.1.7"></script>
-    <script src="/admin-ui/js/orders/listOrders.js?v=3.1.8"></script>
+    <script src="/admin-ui/js/orders/listOrders.js?v=3.1.9"></script>
     <script src="/admin-ui/js/orders/viewOrder.js?v=3.1.8"></script>
     <script src="/admin-ui/js/orders/editOrder.js?v=3.1.8"></script>
-    <script src="/admin-ui/js/queries/listQueries.js?v=3.2.3"></script>
+    <script src="/admin-ui/js/queries/listQueries.js?v=3.2.4"></script>
     <script src="/admin-ui/js/queries/viewQuery.js?v=3.2.3"></script>
     <script src="/admin-ui/js/queries/editQuery.js?v=3.2.3"></script>
     <!-- UI Components and Shared User UI -->
     <script src="/admin-ui/js/core/uiComponents.js?v=3.2.0"></script>
     <script src="/admin-ui/js/users_shared/userPermissionsUI.js?v=3.2.0"></script>
-    <script src="/admin-ui/js/users_shared/userDetailUI.js?v=3.2.0"></script>
-    <script src="/admin-ui/js/users_shared/fetchUsers.js?v=3.1.6"></script>
+    <script src="/admin-ui/js/users_shared/userDetailUI.js?v=3.2.1"></script>
+    <script src="/admin-ui/js/users_shared/fetchUsers.js?v=3.1.7"></script>
     <script src="/admin-ui/js/users_shared/userUtils.js?v=3.1.6"></script>
 
     <!-- Users Module: Distributors -->
