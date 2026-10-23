@@ -88,18 +88,32 @@ window.renderProductsTable = function() {
     pageData.forEach((p, index) => {
         const serialNum = window.filteredProducts.length - (startIndex + index);
         let imageHtml = `<div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(14,165,233,0.1)); border: 1px solid rgba(59,130,246,0.2); display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 18px; flex-shrink: 0;"><i class="fa-solid fa-box-open"></i></div>`;
+        let firstImg = '';
         if (p.product_images) {
-            let firstImg = '';
-            try {
-                let parsed = JSON.parse(p.product_images);
-                if (Array.isArray(parsed) && parsed.length > 0) firstImg = parsed[0];
-            } catch (e) {
-                firstImg = p.product_images.split(',')[0].trim().replace(/['"\\[\\]]/g, '');
+            if (Array.isArray(p.product_images)) {
+                if (p.product_images.length > 0) firstImg = p.product_images[0];
+            } else if (typeof p.product_images === 'string') {
+                try {
+                    let parsed = JSON.parse(p.product_images);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        firstImg = parsed[0];
+                    } else if (typeof parsed === 'string') {
+                        firstImg = parsed;
+                    }
+                } catch (e) {
+                    firstImg = p.product_images.split(',')[0];
+                }
             }
-            
-            if (firstImg) {
-                imageHtml = `<div style="width: 40px; height: 40px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; background: #fff;"><img src="/uploads/products/${firstImg}" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:16px;\\'><i class=\\'fa-solid fa-box-open\\'></i></div>'" /></div>`;
-            }
+        } else if (p.product_image) {
+            firstImg = p.product_image;
+        }
+
+        if (typeof firstImg === 'string') {
+            firstImg = firstImg.trim().replace(/['"\\[\\]]/g, '');
+        }
+
+        if (firstImg) {
+            imageHtml = `<div style="width: 40px; height: 40px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; background: #fff;"><img src="/uploads/products/${firstImg}" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:16px;\\'><i class=\\'fa-solid fa-box-open\\'></i></div>'" /></div>`;
         }
         const tr = document.createElement('tr');
         tr.innerHTML = `

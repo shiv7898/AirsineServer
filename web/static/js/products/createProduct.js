@@ -51,8 +51,14 @@ window.openProductPreviewModal = function(e) {
         </div>
     `;
     
-    document.getElementById('preview-content').innerHTML = previewHtml;
-    document.getElementById('product-preview-modal').style.display = 'flex';
+    const previewEl = document.getElementById('preview-content');
+    const modalEl = document.getElementById('product-preview-modal');
+    if (previewEl && modalEl) {
+        previewEl.innerHTML = previewHtml;
+        modalEl.style.display = 'flex';
+    } else {
+        window.confirmAndSubmitProduct();
+    }
 };
 
 // Submit Create Product (Called from Modal)

@@ -9,7 +9,7 @@ import json
 import os
 import shutil
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union, Any
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -140,7 +140,8 @@ class ProductService:
         tax_gst: float = 0.0,
         stock_pieces: int = 0,
         product_status: str = "Active",
-        images: Optional[List[UploadFile]] = None,
+        # images: Optional[List[UploadFile]] = None,
+        images: Optional[Union[List[str], str, Any]] = None
     ) -> models.Product:
         """Update an existing product by ID."""
         product = db.query(models.Product).filter(models.Product.id == product_id).first()

@@ -57,7 +57,7 @@ def _check_product_permission(current_user: dict, db: Session, required_perm: st
         detail=f"Not authorized. 'products:{required_perm}' permission required."
     )
 
-@router.post("/add-product", response_model=ProductResponse)
+@router.post("/add-product")
 def add_product(
     product_name: str = Form(...),
     product_type: str = Form(...),
@@ -98,7 +98,7 @@ def add_product(
         images=images if images else [],
     )
 
-@router.put("/update-product/{product_id}", response_model=ProductResponse)
+@router.put("/update-product/{product_id}")
 def update_product(
     product_id: int,
     product_name: str = Form(...),
